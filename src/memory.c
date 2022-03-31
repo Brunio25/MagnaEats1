@@ -5,48 +5,7 @@
 #include <sys/mman.h>
 #include <sys/stat.h>
 #include <fcntl.h>
-
-struct pointers
-{
-	int in;
-	int out;
-};
-
-// estrutura que representa um buffer circular
-struct circular_buffer
-{
-	struct pointers *ptrs;
-	struct operation *buffer;
-};
-
-// estrutura que representa um buffer de acesso aleatório
-struct rnd_access_buffer
-{
-	int *ptrs;
-	struct operation *buffer;
-};
-
-// Estrutura que representa uma operação (pedido/resposta)
-struct operation
-{
-	int id;				   // id da operação
-	int requested_rest;	   // id do restaurante requisitado
-	int requesting_client; // id do cliente que fez o pedido
-	char *requested_dish;  // nome do(s) prato(s) pedido(s)
-
-	char status;		  // estado da operação
-	int receiving_rest;	  // id do restaurante que recebeu pedido
-	int receiving_driver; // id do motorista que fez entrega
-	int receiving_client; // id do cliente que recebeu a encomenda
-};
-
-// estrutura que agrega os shared memory buffers necessários para comunicação entre processos
-struct communication_buffers
-{
-	struct rnd_access_buffer *main_rest; // buffer para main enviar pedidos a restaurantes
-	struct circular_buffer *rest_driv;	 // buffer para restaurantes encaminharem pedidos a motoristas
-	struct rnd_access_buffer *driv_cli;	 // buffer para motoristas entregarem pedidos aos clientes
-};
+#include "../include/memory.h"
 
 /* Função que reserva uma zona de memória partilhada com tamanho indicado
  * por size e nome name, preenche essa zona de memória com o valor 0, e

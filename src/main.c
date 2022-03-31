@@ -1,29 +1,6 @@
 #include <stdlib.h>
-#include "memory.h"
-
-
-//Estrutura que agrega a informação necessária pela main do MAGNAEATS.
-struct main_data {
-	int max_ops;			//número máximo de operações
-	int buffers_size;		//tamanho máximo dos buffers de mem. partilhada
-	
-	int n_restaurants;		//número de restaurantes
-	int n_drivers;			//número de motoristas
-	int n_clients;			//número de clientes
-	
-	int *restaurant_pids;	//process ids de restaurantes
-	int *driver_pids;		//process ids de motoristas
-	int *client_pids;		//process ids de clientes
-	
-	int* restaurant_stats;	//nº de operações encaminhadas por cada restaurante
-	int* driver_stats;		//nº de operações respondidas por cada motorista
-	int* client_stats;		//nº de operações recebidas por cada cliente
-	
-	struct operation* results;	//array com histórico de ops executadas
-	
-	int* terminate; //flag booleana, valor 1 indica que MAGNAEATS deve terminar a sua execução
-};
-
+#include <stdio.h>
+#include "../include/main.h"
 
 /* Função que lê os argumentos da aplicação, nomeadamente o número
 * máximo de operações, o tamanho dos buffers de memória partilhada
