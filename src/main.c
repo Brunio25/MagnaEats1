@@ -1,6 +1,6 @@
-
 #include <stdlib.h>
 #include "memory.h"
+
 
 //Estrutura que agrega a informação necessária pela main do MAGNAEATS.
 struct main_data {
@@ -125,7 +125,7 @@ void write_statistics(struct main_data* data) {
 * reservados na estrutura data.
 */
 void destroy_memory_buffers(struct main_data* data, struct communication_buffers* buffers) {
-    
+   
 }
 
 int main(int argc, char *argv[]) {
