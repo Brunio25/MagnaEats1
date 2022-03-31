@@ -14,13 +14,19 @@
 * estes passos, pode usar os outros métodos auxiliares definidos em client.h. 
 */
 int execute_client(int client_id, struct communication_buffers* buffers, struct main_data* data) {
-    while (0==0){
+    while (1){
         if (data -> terminate == 0) {
-            
+            //main_rest
+            struct operation* buffer = buffers -> main_rest -> buffer;
+            int *ptrs = buffers -> main_rest -> ptrs;
+            while( buffer < size && ptrs < size){
+                client_process_operation(buffer , client_id , data , ptrs);
+                ptrs++;
+                buffer++;
+            }
         }
     }
     return 0;
-
 }
 
 
