@@ -21,7 +21,7 @@ void main_args(int argc, char* argv[], struct main_data* data) {
 * main_data. Para tal, pode ser usada a função create_dynamic_memory.
 */
 void create_dynamic_memory_buffers(struct main_data* data) {
-
+	
 }
 
 /* Função que reserva a memória partilhada necessária para a execução do
@@ -50,7 +50,7 @@ void launch_processes(struct communication_buffers* buffers, struct main_data* d
 * help - imprime informação sobre os comandos disponiveis
 */
 void user_interaction(struct communication_buffers* buffers, struct main_data* data) {
-
+	
 }
 
 /* Se o limite de operações ainda não tiver sido atingido, cria uma nova
@@ -80,9 +80,11 @@ void read_status(struct main_data* data) {
 * reservadas. Para tal, pode usar as outras funções auxiliares do main.h.
 */
 void stop_execution(struct main_data* data, struct communication_buffers* buffers) {
-
+	data->terminate = 1;
+	wait_processes(data);
+	write_statistics(data);
+	destroy_memory_buffers(data, buffers);
 }
-
 /* Função que espera que todos os processos previamente iniciados terminem,
 * incluindo restaurantes, motoristas e clientes. Para tal, pode usar a função 
 * wait_process do process.h.
@@ -95,7 +97,8 @@ void wait_processes(struct main_data* data) {
 * operações foram processadas por cada restaurante, motorista e cliente.
 */
 void write_statistics(struct main_data* data) {
-
+	printf("Terminando o MAGNAEATS! Imprimindo estatísticas:\n");
+	
 }
 
 /* Função que liberta todos os buffers de memória dinâmica e partilhada previamente

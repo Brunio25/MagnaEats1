@@ -14,16 +14,22 @@
 * estes passos, pode usar os outros métodos auxiliares definidos em client.h. 
 */
 int execute_client(int client_id, struct communication_buffers* buffers, struct main_data* data) {
+    int counter = 0;
     while (1){
         if (data -> terminate == 0) {
             //main_rest
             struct operation* buffer = buffers -> main_rest -> buffer;
             int *ptrs = buffers -> main_rest -> ptrs;
-            while( buffer < size && ptrs < size){
-                client_process_operation(buffer , client_id , data , ptrs);
-                ptrs++;
-                buffer++;
+            while( buffer < sizeof(buffer) && ptrs < sizeof(ptrs)){
+                if(buffer->id != -1){
+                    client_process_operation(buffer , client_id , data , ptrs);
+                    ptrs++;
+                    buffer++;
+                    counter++;
+                }
             }
+        }else {
+            return counter;
         }
     }
     return 0;
@@ -35,7 +41,16 @@ int execute_client(int client_id, struct communication_buffers* buffers, struct 
 * verificar se data->terminate tem valor 1. Em caso afirmativo, retorna imediatamente da função.
 */
 void client_get_operation(struct operation* op, int client_id, struct communication_buffers* buffers, struct main_data* data) {
+    if(data->terminate != 1){
+        op = buffers->driv_cli->buffer;
+        int* ptrs = buffers->driv_cli->ptrs;
+        while(ptrs < sizeof(ptrs )) {
+            
+        }
+        
 
+    }
+    return 0;
 }
 
 

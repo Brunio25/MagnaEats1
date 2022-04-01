@@ -4,8 +4,6 @@
 #include "memory.h"
 #include "main.h"
 
-
-
 /* Função principal de um Cliente. Deve executar um ciclo infinito onde em 
 * cada iteração lê uma operação da main e data->terminate ainda for igual a 0,
 * processa-a e guarda o resultado no histórico de operações da Main.
