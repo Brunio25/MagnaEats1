@@ -8,7 +8,6 @@ SRC_dir = src
 LIBS = -lrt
 
 
-
 magnaeats: $(OBJETOS)
 	$(CC) $(addprefix $(OBJ_dir)/,$(OBJETOS)) -o bin/magnaeats $(LIBS)
 
@@ -18,6 +17,3 @@ magnaeats: $(OBJETOS)
 clean:
 	rm obj/*.o
 	rm bin/magnaeats
-
-
-	 
