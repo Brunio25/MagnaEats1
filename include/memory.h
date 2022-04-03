@@ -45,7 +45,7 @@ struct operation {
 //estrutura que agrega os shared memory buffers necessários para comunicação entre processos
 struct communication_buffers {
 	struct rnd_access_buffer* main_rest; 		//buffer para main enviar pedidos a restaurantes
-	struct circular_buffer* rest_driv;	//buffer para restaurantes encaminharem pedidos a motoristas
+	struct circular_buffer* rest_driv;			//buffer para restaurantes encaminharem pedidos a motoristas
 	struct rnd_access_buffer* driv_cli;  		//buffer para motoristas entregarem pedidos aos clientes
 };
 

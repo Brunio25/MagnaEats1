@@ -16,7 +16,7 @@ void *create_shared_memory(char *name, int size)
 {
 	int *ptr;
 	int shm = shm_open(name, O_CREAT | O_RDWR, S_IRUSR | S_IWUSR);
-	int ret = ftruncate(shm, sizeof(int));
+	int ret = ftruncate(shm, size);
 
 	if (ret == -1)
 	{
@@ -24,7 +24,7 @@ void *create_shared_memory(char *name, int size)
 		exit(1);
 	}
 
-	ptr = mmap(0, sizeof(int), PROT_READ | PROT_WRITE, MAP_SHARED, shm, 0);
+	ptr = mmap(0, size, PROT_READ | PROT_WRITE, MAP_SHARED, shm, 0);
 	if (ptr == MAP_FAILED)
 	{
 		perror("/shm-mmap");
@@ -47,7 +47,7 @@ void *create_dynamic_memory(int size)
  */
 void destroy_shared_memory(char *name, void *ptr, int size)
 {
-	int ret = munmap(ptr, sizeof(int));
+	int ret = munmap(ptr, size);
 	if (ret == -1)
 	{
 		perror("/shm");

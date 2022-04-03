@@ -16,23 +16,18 @@
 int execute_client(int client_id, struct communication_buffers* buffers, struct main_data* data) {
     int counter = 0;
     while (1){
-        if (data -> terminate == 0) {
-            //main_rest
-            struct operation* buffer = buffers -> main_rest -> buffer;
-            int *ptrs = buffers -> main_rest -> ptrs;
-            while( buffer < sizeof(buffer) && ptrs < sizeof(ptrs)){
-                if(buffer->id != -1){
-                    client_process_operation(buffer , client_id , data , ptrs);
-                    ptrs++;
-                    buffer++;
-                    counter++;
-                }
+        struct operation* op;
+        client_get_operation(op, client_id, buffers, data);
+        if (data->terminate == 0) {
+            if(op->id != -1) {
+                client_process_operation(op, client_id, data, &counter);
             }
-        }else {
-            return counter;
         }
+        else {
+            return counter;
+        }        
     }
-    return 0;
+    return counter;
 }
 
 
@@ -41,16 +36,11 @@ int execute_client(int client_id, struct communication_buffers* buffers, struct 
 * verificar se data->terminate tem valor 1. Em caso afirmativo, retorna imediatamente da função.
 */
 void client_get_operation(struct operation* op, int client_id, struct communication_buffers* buffers, struct main_data* data) {
-    if(data->terminate != 1){
-        op = buffers->driv_cli->buffer;
-        int* ptrs = buffers->driv_cli->ptrs;
-        while(ptrs < sizeof(ptrs )) {
-            
-        }
-        
-
+    if (data->terminate != 1) {
+        read_driver_client_buffer(buffers->main_rest, client_id, sizeof(buffers->main_rest), op);
     }
-    return 0;
+    
+    return;
 }
 
 
@@ -59,5 +49,16 @@ void client_get_operation(struct operation* op, int client_id, struct communicat
 * incrementando o contador de operações. Atualiza também a operação na estrutura data.
 */
 void client_process_operation(struct operation* op, int client_id, struct main_data* data, int* counter) {
+    op -> receiving_client = client_id;
+    op -> status = 'R';
+    struct operation *results = data -> results;
+    while( results < sizeof(results)) {
+        if (results == NULL) {      //TODO
+            results = op;
+            break;
+        }
+        results++;
+    }
+    counter++;
 
 }
