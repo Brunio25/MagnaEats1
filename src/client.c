@@ -44,19 +44,11 @@ void client_get_operation(struct operation* op, int client_id, struct communicat
  * incrementando o contador de operações. Atualiza também a operação na estrutura data.
  */
 void client_process_operation(struct operation* op, int client_id, struct main_data* data, int* counter) {
-<<<<<<< HEAD
     op -> receiving_client = client_id;
     op -> status = 'C';
     struct operation *results = data -> results;
     while( results < sizeof(results)) {
         if (results == NULL) {      //TODO
-=======
-    op->receiving_client = client_id;
-    op->status = 'R';
-    struct operation* results = data->results;
-    while (results < sizeof(results)) {
-        if (results == NULL) {  // TODO
->>>>>>> acb0409c3a32e8f52b71c80324c9d36913500980
             results = op;
             break;
         }
