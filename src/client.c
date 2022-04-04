@@ -1,8 +1,6 @@
-
-
-#include "memory.h"
-#include "main.h"
-
+#include "../include/memory.h"
+#include "../include/main.h"
+#include "../include/client.h"
 
 
 /* Função principal de um Cliente. Deve executar um ciclo infinito onde em
@@ -50,7 +48,7 @@ void client_get_operation(struct operation* op, int client_id, struct communicat
 */
 void client_process_operation(struct operation* op, int client_id, struct main_data* data, int* counter) {
     op -> receiving_client = client_id;
-    op -> status = 'R';
+    op -> status = 'C';
     struct operation *results = data -> results;
     while( results < sizeof(results)) {
         if (results == NULL) {      //TODO
@@ -60,5 +58,4 @@ void client_process_operation(struct operation* op, int client_id, struct main_d
         results++;
     }
     counter++;
-
 }

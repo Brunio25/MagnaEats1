@@ -1,6 +1,7 @@
-OBJETOS = main.o memory.o
+OBJETOS = main.o memory.o client.o
 main.o = main.h
 memory.o = memory.h
+client.o = memory.h main.h
 OBJ_dir = obj
 CFLAGS = -Wall
 CC = gcc

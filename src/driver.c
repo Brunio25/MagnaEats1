@@ -10,24 +10,61 @@
 * número de operações processadas. Para efetuar estes passos, pode usar os
 * outros métodos auxiliares definidos em driver.h.
 */
-int execute_driver(int driver_id, struct communication_buffers* buffers, struct main_data* data);
+int execute_driver(int driver_id, struct communication_buffers* buffers, struct main_data* data) {
+    int counter = 0;
+    while (1){
+        struct operation* op;
+        driver_receive_operation(op, buffers, data);
+        if (data->terminate == 0) {
+            if(op->id != -1) {
+                driver_process_operation(op, driver_id, data, &counter);
+                driver_send_answer(op, buffers, data);
+            }
+        }
+        else {
+            return counter;
+        }        
+    }
+    return counter;
+}
 
 
 /* Função que lê uma operação do buffer de memória partilhada entre restaurantes e motoristas.
 * Antes de tentar ler a operação, deve verificar se data->terminate tem valor 1.
 * Em caso afirmativo, retorna imediatamente da função.
 */
-void driver_receive_operation(struct operation* op, struct communication_buffers* buffers, struct main_data* data);
+void driver_receive_operation(struct operation* op, struct communication_buffers* buffers, struct main_data* data) {
+    if (data->terminate != 1) {
+        read_rest_driver_buffer(buffers -> rest_driv, sizeof(buffers->rest_driv), op);
+    }
+    
+    return;
+}
 
 
 /* Função que processa uma operação, alterando o seu campo receiving_driver para o id
 * passado como argumento, alterando o estado da mesma para 'D' (driver), e 
 * incrementando o contador de operações. Atualiza também a operação na estrutura data.
 */
-void driver_process_operation(struct operation* op, int driver_id, struct main_data* data, int* counter);
+void driver_process_operation(struct operation* op, int driver_id, struct main_data* data, int* counter) {
+    op -> receiving_driver = driver_id;
+    op -> status = 'D';
+    struct operation *results = data -> results;
+    while( results < sizeof(results)) {
+        if (results == NULL) {      //TODO
+            results = op;
+            break;
+        }
+        results++;
+    }
+    counter++;
+}
 
 
 /* Função que escreve uma operação no buffer de memória partilhada entre
 * motoristas e clientes.
 */
-void driver_send_answer(struct operation* op, struct communication_buffers* buffers, struct main_data* data);
+void driver_send_answer(struct operation* op, struct communication_buffers* buffers, struct main_data* data) {
+    write_rest_driver_buffer(buffers->driv_cli, sizeof(buffers->driv_cli), op);
+    return;
+}

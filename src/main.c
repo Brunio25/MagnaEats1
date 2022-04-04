@@ -1,6 +1,9 @@
 #include <stdlib.h>
 #include <stdio.h>
+#include <string.h>
+#include <ctype.h>
 #include "../include/main.h"
+#include "../include/process.h"
 
 /* Função que lê os argumentos da aplicação, nomeadamente o número
 * máximo de operações, o tamanho dos buffers de memória partilhada
@@ -21,7 +24,12 @@ void main_args(int argc, char* argv[], struct main_data* data) {
 * main_data. Para tal, pode ser usada a função create_dynamic_memory.
 */
 void create_dynamic_memory_buffers(struct main_data* data) {
-	
+	data -> client_stats = create_dynamic_memory(data -> n_clients * sizeof(int));
+	data -> driver_stats = create_dynamic_memory(data -> n_drivers * sizeof(int));
+	data -> restaurant_stats = create_dynamic_memory(data -> n_restaurants * sizeof(int));
+	data -> client_pids = create_dynamic_memory(data -> n_clients * sizeof(int));
+	data -> driver_pids = create_dynamic_memory(data -> n_drivers * sizeof(int));
+	data -> restaurant_pids = create_dynamic_memory(data -> n_restaurants * sizeof(int));
 }
 
 /* Função que reserva a memória partilhada necessária para a execução do
@@ -31,7 +39,11 @@ void create_dynamic_memory_buffers(struct main_data* data) {
 * Para tal, pode ser usada a função create_shared_memory.
 */
 void create_shared_memory_buffers(struct main_data* data, struct communication_buffers* buffers) {
-
+	buffers -> main_rest = create_shared_memory("/main_rest", data -> buffers_size * sizeof(struct rnd_access_buffer));
+	buffers -> rest_driv = create_shared_memory("/rest_driv", data -> buffers_size * sizeof(struct circular_buffer));
+	buffers -> driv_cli = create_shared_memory("/driv_cli", data -> buffers_size * sizeof(struct rnd_access_buffer));
+	data -> results = create_shared_memory("/results", data -> n_clients * sizeof(struct operation));
+	data -> terminate = create_shared_memory("/terminate", sizeof(int));
 }
 
 /* Função que inicia os processos dos restaurantes, motoristas e
@@ -40,7 +52,29 @@ void create_shared_memory_buffers(struct main_data* data, struct communication_b
 * da estrutura data.
 */
 void launch_processes(struct communication_buffers* buffers, struct main_data* data) {
+	int i;
+	for (i = 0; i < data->n_restaurants; i++) {
+		data->restaurant_pids[i] = launch_restaurant(i, buffers, data);
+	}
+	
+	for (i = 0; i < data->n_drivers; i++) {
+		data->driver_pids[i] = launch_driver(i, buffers, data);
+	}
+	
+	for (i = 0; i < data->n_clients; i++) {
+		data->client_pids[i] = launch_client(i, buffers, data);
+	}
+}
 
+/* Função que imprime a informação sobre os comandos disponiveis
+* ao utilizador.
+*/
+void printHelp() {
+	printf("Ações disponíveis:\n\trequest client restaurant dish - criar um novo pedido\n");
+    printf("\tstatus id - consultar o estado de um pedido \n");
+    printf("\tstop - termina a execução do magnaeats.\n");
+    printf("\thelp - imprime informação sobre as ações disponíveis.\n");
+	return;
 }
 
 /* Função que faz interação do utilizador, podendo receber 4 comandos:
@@ -50,7 +84,31 @@ void launch_processes(struct communication_buffers* buffers, struct main_data* d
 * help - imprime informação sobre os comandos disponiveis
 */
 void user_interaction(struct communication_buffers* buffers, struct main_data* data) {
-	
+	char line[8];
+	int counter = 0;
+
+	printHelp();
+	while (1) {
+		printf("Introduzir ação:\n");
+		scanf("%7s",line);
+
+		if(strcmp(line, "request") == 0) {
+			create_request(&counter, buffers, data);
+		}
+		else if (strcmp(line, "status") == 0) {
+			read_status(data);
+		}
+		else if (strcmp(line, "stop") == 0) {
+			stop_execution(data, buffers);
+			return;
+		}
+		else if (strcmp(line, "help") == 0) {
+			printHelp();
+		} 
+		else {
+			printf("Ação não reconhecida, insira 'help' para assistência.\n");
+		}
+	}
 }
 
 /* Se o limite de operações ainda não tiver sido atingido, cria uma nova
@@ -59,7 +117,40 @@ void user_interaction(struct communication_buffers* buffers, struct main_data* d
 * Imprime o id da operação e incrementa o contador de operações op_counter.
 */
 void create_request(int* op_counter, struct communication_buffers* buffers, struct main_data* data) {
+	if (*op_counter > data->max_ops) {
+		printf("Número máximo de operações atingido.\n");
+		return;
+	}
+	char client;
+	char restaurant;
+	char dish[10];
 
+	scanf("%c %c %s", &client, &restaurant, dish);
+	struct operation *op;
+	if (!isdigit(client) || !isdigit(restaurant)) {
+		struct operation t = {
+			.id = *op_counter,
+			.requesting_client = -1,
+			.requested_rest = -1,
+			.requested_dish = dish,
+			.status = 'I'
+		};
+		op = &t;
+	}
+	else {
+		struct operation t = {
+			.id = *op_counter,
+			.requesting_client = client,
+			.requested_rest = restaurant,
+			.requested_dish = dish
+		};
+		op = &t;
+	}
+	
+	*buffers->main_rest->buffer = *op;
+
+	printf("O pedido #%d foi criado.\n", *op_counter);
+	(*op_counter)++;
 }
 
 /* Função que lê um id de operação do utilizador e verifica se a mesma
@@ -69,7 +160,33 @@ void create_request(int* op_counter, struct communication_buffers* buffers, stru
 * e os ids do restaurante, motorista, e cliente que a receberam e processaram.
 */
 void read_status(struct main_data* data) {
-
+	char c;
+	int id;
+	scanf("%c",&c);
+	if (isdigit(c)) {
+		id = atoi(&c);
+	}
+	else {
+		printf("id de pedido fornecido é inválido!\n");
+		ungetc(c, stdin);
+		return;
+	}
+	struct operation* results = data->results;
+	
+	while (results < data->results + sizeof(results)) {
+		if(results->id == -1) {
+			printf("Pedido %d com estado %c requisitado pelo cliente %d ao restaurante %d ", id, results->status, results->requesting_client,results->requested_rest);
+			if (results->id == id) { //TODO does not work in Invalid status operation
+				printf("com o prato %s, foi tratado pelo restaurante %d,", results->requested_dish, results->receiving_rest);
+				printf(" encaminhado pelo motorista %d, e enviado ao cliente %d!\n", results->receiving_driver, results->receiving_client);
+				break;
+			}
+		}else {
+			printf("com o prato %s, ainda não foi recebido no restaurante!\n",results->requested_dish);
+		}
+		results++;
+	}
+	
 }
 
 /* Função que termina a execução do programa MAGNAEATS. Deve começar por 
@@ -80,7 +197,7 @@ void read_status(struct main_data* data) {
 * reservadas. Para tal, pode usar as outras funções auxiliares do main.h.
 */
 void stop_execution(struct main_data* data, struct communication_buffers* buffers) {
-	data->terminate = 1;
+	*data->terminate = 1;
 	wait_processes(data);
 	write_statistics(data);
 	destroy_memory_buffers(data, buffers);
@@ -90,7 +207,19 @@ void stop_execution(struct main_data* data, struct communication_buffers* buffer
 * wait_process do process.h.
 */
 void wait_processes(struct main_data* data) {
+	int i = 0;
+	
+	for (i = 0; i < data->n_restaurants; i++) {
+		wait_process(data->restaurant_pids[i]);
+	}
 
+	for (i = 0; i < data->n_drivers; i++) {
+		wait_process(data->driver_pids[i]);
+	}
+
+	for (i = 0; i < data->n_clients; i++) {
+		wait_process(data->client_pids[i]);
+	}
 }
 
 /* Função que imprime as estatisticas finais do MAGNAEATS, nomeadamente quantas
@@ -98,6 +227,17 @@ void wait_processes(struct main_data* data) {
 */
 void write_statistics(struct main_data* data) {
 	printf("Terminando o MAGNAEATS! Imprimindo estatísticas:\n");
+	for(int i = 0; i < data->n_restaurants; i++){
+		printf("Restaurante %d preparou %d pedidos!", i, data->restaurant_stats[i]);
+	}
+	
+	for (int i = 0; i < data->n_drivers; i++) {
+		printf("Motorista %d entregou %d pedidos!\n", i, data->driver_stats[i]);
+	}
+
+	for(int i = 0; i < data->n_clients; i++) {
+		printf("Cliente %d recebeu %d pedidos!",i , data->client_stats[i]);
+	}
 	
 }
 
@@ -105,7 +245,17 @@ void write_statistics(struct main_data* data) {
 * reservados na estrutura data.
 */
 void destroy_memory_buffers(struct main_data* data, struct communication_buffers* buffers) {
-   
+	destroy_dynamic_memory(data -> client_stats);
+	destroy_dynamic_memory(data -> driver_stats);
+	destroy_dynamic_memory(data -> restaurant_stats);
+	destroy_dynamic_memory(data -> client_pids);
+	destroy_dynamic_memory(data -> driver_pids);
+	destroy_dynamic_memory(data -> restaurant_pids);
+	destroy_shared_memory("/main_rest", buffers->main_rest, data -> buffers_size * sizeof(struct rnd_access_buffer));
+	destroy_shared_memory("/rest_driv", buffers->rest_driv, data -> buffers_size * sizeof(struct circular_buffer));
+	destroy_shared_memory("/driv_cli", buffers->driv_cli, data -> buffers_size * sizeof(struct rnd_access_buffer));
+	destroy_shared_memory("/results", data -> results, data -> n_clients * sizeof(struct operation));
+	destroy_shared_memory("/terminate", data -> terminate, sizeof(int));
 }
 
 int main(int argc, char *argv[]) {
