@@ -1,5 +1,5 @@
-#include "memory.h"
 #include "main.h"
+#include "memory.h"
 
 /* Função principal de um Restaurante. Deve executar um ciclo infinito onde em
  * cada iteração lê uma operação da main e se e data->terminate ainda for igual a 0, processa-a e
@@ -9,18 +9,17 @@
  * operações processadas. Para efetuar estes passos, pode usar os outros
  * métodos auxiliares definidos em restaurant.h.
  */
-int execute_restaurant(int rest_id, struct communication_buffers *buffers, struct main_data *data){
+int execute_restaurant(int rest_id, struct communication_buffers *buffers, struct main_data *data) {
     int counter = 0;
-    while (1){
-        struct operation* op;
+    while (1) {
+        struct operation *op;
         restaurant_receive_operation(op, rest_id, buffers, data);
         if (data->terminate == 0) {
-            if(op->id != -1) {
+            if (op->id != -1) {
                 restaurant_process_operation(op, rest_id, data, &counter);
                 restaurant_forward_operation(op, buffers, data);
             }
-        }
-        else {
+        } else {
             return counter;
         }
     }
@@ -36,7 +35,7 @@ void restaurant_receive_operation(struct operation *op, int rest_id, struct comm
     if (data->terminate != 1) {
         read_main_rest_buffer(buffers->main_rest, rest_id, sizeof(buffers->main_rest), op);
     }
-    
+
     return;
 }
 
@@ -45,11 +44,11 @@ void restaurant_receive_operation(struct operation *op, int rest_id, struct comm
  * incrementando o contador de operações. Atualiza também a operação na estrutura data.
  */
 void restaurant_process_operation(struct operation *op, int rest_id, struct main_data *data, int *counter) {
-    op -> receiving_rest = rest_id;
-    op -> status = 'R';
-    struct operation *results = data -> results;
-    while( results < sizeof(results)) {
-        if (results == NULL) {      //TODO
+    op->receiving_rest = rest_id;
+    op->status = 'R';
+    struct operation *results = data->results;
+    while (results < sizeof(results)) {
+        if (results == NULL) {  // TODO
             results = op;
             break;
         }

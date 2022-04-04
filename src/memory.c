@@ -1,90 +1,76 @@
+#include "../include/memory.h"
+
+#include <fcntl.h>
 #include <stdio.h>
-#include <unistd.h>
 #include <stdlib.h>
-#include <sys/wait.h>
 #include <sys/mman.h>
 #include <sys/stat.h>
-#include <fcntl.h>
-#include "../include/memory.h"
+#include <sys/wait.h>
+#include <unistd.h>
 
 /* Função que reserva uma zona de memória partilhada com tamanho indicado
  * por size e nome name, preenche essa zona de memória com o valor 0, e
  * retorna um apontador para a mesma. Pode concatenar o resultado da função
  * getuid() a name, para tornar o nome único para o processo.
  */
-void *create_shared_memory(char *name, int size)
-{
-	int *ptr;
-	int shm = shm_open(name, O_CREAT | O_RDWR, S_IRUSR | S_IWUSR);
-	int ret = ftruncate(shm, size);
+void *create_shared_memory(char *name, int size) {
+    int *ptr;
+    int shm = shm_open(name, O_CREAT | O_RDWR, S_IRUSR | S_IWUSR);
+    int ret = ftruncate(shm, size);
 
-	if (ret == -1)
-	{
-		perror("/shm");
-		exit(1);
-	}
+    if (ret == -1) {
+        perror("/shm");
+        exit(1);
+    }
 
-	ptr = mmap(0, size, PROT_READ | PROT_WRITE, MAP_SHARED, shm, 0);
-	if (ptr == MAP_FAILED)
-	{
-		perror("/shm-mmap");
-		exit(2);
-	}
+    ptr = mmap(0, size, PROT_READ | PROT_WRITE, MAP_SHARED, shm, 0);
+    if (ptr == MAP_FAILED) {
+        perror("/shm-mmap");
+        exit(2);
+    }
 
-	return ptr;
+    return ptr;
 }
 
 /* Função que reserva uma zona de memória dinâmica com tamanho indicado
  * por size, preenche essa zona de memória com o valor 0, e retorna um
  * apontador para a mesma.
  */
-void *create_dynamic_memory(int size)
-{
-	return calloc(size + 1, sizeof(int));
-}
+void *create_dynamic_memory(int size) { return calloc(size + 1, sizeof(int)); }
 
 /* Função que liberta uma zona de memória dinâmica previamente reservada.
  */
-void destroy_shared_memory(char *name, void *ptr, int size)
-{
-	int ret = munmap(ptr, size);
-	if (ret == -1)
-	{
-		perror("/shm");
-		exit(3);
-	}
+void destroy_shared_memory(char *name, void *ptr, int size) {
+    int ret = munmap(ptr, size);
+    if (ret == -1) {
+        perror("/shm");
+        exit(3);
+    }
 
-	ret = shm_unlink("/shm");
-	if (ret == -1)
-	{
-		perror("/shm");
-		exit(4);
-	}
+    ret = shm_unlink("/shm");
+    if (ret == -1) {
+        perror("/shm");
+        exit(4);
+    }
 }
 
 /* Função que liberta uma zona de memória partilhada previamente reservada.
  */
-void destroy_dynamic_memory(void *ptr)
-{
-	free(ptr);
-}
+void destroy_dynamic_memory(void *ptr) { free(ptr); }
 
 /* Função que escreve uma operação no buffer de memória partilhada entre a Main
  * e os restaurantes. A operação deve ser escrita numa posição livre do buffer,
  * tendo em conta o tipo de buffer e as regras de escrita em buffers desse tipo.
  * Se não houver nenhuma posição livre, não escreve nada.
  */
-void write_main_rest_buffer(struct rnd_access_buffer *buffer, int buffer_size, struct operation *op)
-{
-	for (int i = 0; i < buffer_size; i++)
-	{
-		if (buffer[i].ptrs == 0)
-		{
-			buffer[i].buffer = op;
-			*buffer[i].ptrs = 1;
-			break;
-		}
-	}
+void write_main_rest_buffer(struct rnd_access_buffer *buffer, int buffer_size, struct operation *op) {
+    for (int i = 0; i < buffer_size; i++) {
+        if (buffer[i].ptrs == 0) {
+            buffer[i].buffer = op;
+            *buffer[i].ptrs = 1;
+            break;
+        }
+    }
 }
 
 /* Função que escreve uma operação no buffer de memória partilhada entre os restaurantes
@@ -92,30 +78,28 @@ void write_main_rest_buffer(struct rnd_access_buffer *buffer, int buffer_size, s
  * tendo em conta o tipo de buffer e as regras de escrita em buffers desse tipo.
  * Se não houver nenhuma posição livre, não escreve nada.
  */
-void write_rest_driver_buffer(struct circular_buffer *buffer, int buffer_size, struct operation *op)
-{
-	/* produzir um item em next_produced */
-	while (((buffer->ptrs->in + 1) % buffer_size) == buffer->ptrs->out);
-	// buffer cheio; esperar que out seja avançado pelo consumidor
-	/* do nothing */
-	buffer[buffer->ptrs->in].buffer = op;
-	buffer->ptrs->in = (buffer->ptrs->in + 1) % buffer_size;
+void write_rest_driver_buffer(struct circular_buffer *buffer, int buffer_size, struct operation *op) {
+    /* produzir um item em next_produced */
+    while (((buffer->ptrs->in + 1) % buffer_size) == buffer->ptrs->out)
+        ;
+    // buffer cheio; esperar que out seja avançado pelo consumidor
+    /* do nothing */
+    buffer[buffer->ptrs->in].buffer = op;
+    buffer->ptrs->in = (buffer->ptrs->in + 1) % buffer_size;
 }
 /* Função que escreve uma operação no buffer de memória partilhada entre os motoristas
  * e os clientes. A operação deve ser escrita numa posição livre do buffer,
  * tendo em conta o tipo de buffer e as regras de escrita em buffers desse tipo.
  * Se não houver nenhuma posição livre, não escreve nada.
  */
-void write_driver_client_buffer(struct rnd_access_buffer * buffer, int buffer_size, struct operation *op) {
-	for (int i = 0; i < buffer_size; i++)
-	{
-		if (buffer[i].ptrs == 0)
-		{
-			buffer[i].buffer = op;
-			*buffer[i].ptrs = 1;
-			break;
-		}
-	}
+void write_driver_client_buffer(struct rnd_access_buffer *buffer, int buffer_size, struct operation *op) {
+    for (int i = 0; i < buffer_size; i++) {
+        if (buffer[i].ptrs == 0) {
+            buffer[i].buffer = op;
+            *buffer[i].ptrs = 1;
+            break;
+        }
+    }
 }
 
 /* Função que lê uma operação do buffer de memória partilhada entre a Main
@@ -123,20 +107,21 @@ void write_driver_client_buffer(struct rnd_access_buffer * buffer, int buffer_si
  * A leitura deve ser feita tendo em conta o tipo de buffer e as regras de leitura em buffers desse tipo.
  * Se não houver nenhuma operação disponível, afeta op->id com o valor -1.
  */
-void read_main_rest_buffer(struct rnd_access_buffer * buffer, int rest_id, int buffer_size, struct operation *op) {
-	int bool = 0;
-	for (int i = 0; i < buffer_size && bool == 0; i++) {
-		if (*buffer[i].ptrs == 1 && buffer[i].buffer->requested_rest == rest_id)   //TODO check correct restaurant in buffer
-		{
-			op = buffer[i].buffer;
-			*buffer[i].ptrs = 0;
-			bool = 1;
-		}
-	}
+void read_main_rest_buffer(struct rnd_access_buffer *buffer, int rest_id, int buffer_size, struct operation *op) {
+    int bool = 0;
+    for (int i = 0; i < buffer_size && bool == 0; i++) {
+        if (*buffer[i].ptrs == 1 &&
+            buffer[i].buffer->requested_rest == rest_id)  // TODO check correct restaurant in buffer
+        {
+            op = buffer[i].buffer;
+            *buffer[i].ptrs = 0;
+            bool = 1;
+        }
+    }
 
-	if (bool == 0) {
-		op->id = -1;
-	}
+    if (bool == 0) {
+        op->id = -1;
+    }
 }
 
 /* Função que lê uma operação do buffer de memória partilhada entre os restaurantes e os motoristas,
@@ -144,14 +129,14 @@ void read_main_rest_buffer(struct rnd_access_buffer * buffer, int rest_id, int b
  * A leitura deve ser feita tendo em conta o tipo de buffer e as regras de leitura em buffers desse tipo.
  * Se não houver nenhuma operação disponível, afeta op->id com o valor -1.
  */
-void read_rest_driver_buffer(struct circular_buffer* buffer, int buffer_size, struct operation *op) {
-	if (buffer->ptrs->in == buffer->ptrs->out) {
-		op->id = -1;
-	}
+void read_rest_driver_buffer(struct circular_buffer *buffer, int buffer_size, struct operation *op) {
+    if (buffer->ptrs->in == buffer->ptrs->out) {
+        op->id = -1;
+    }
 
-	int out = buffer->ptrs->out;
-	op = buffer[out].buffer;
-	buffer->ptrs->out = (out + 1) % buffer_size;
+    int out = buffer->ptrs->out;
+    op = buffer[out].buffer;
+    buffer->ptrs->out = (out + 1) % buffer_size;
 }
 
 /* Função que lê uma operação do buffer de memória partilhada entre os motoristas e os clientes,
@@ -159,18 +144,19 @@ void read_rest_driver_buffer(struct circular_buffer* buffer, int buffer_size, st
  * ser feita tendo em conta o tipo de buffer e as regras de leitura em buffers desse tipo. Se não houver
  * nenhuma operação disponível, afeta op->id com o valor -1.
  */
-void read_driver_client_buffer(struct rnd_access_buffer * buffer, int client_id, int buffer_size, struct operation *op) {
-	int bool = 0;
-	for (int i = 0; i < buffer_size && bool == 0; i++) {
-		if (*(buffer[i].ptrs) == 1 && buffer[i].buffer->receiving_client == client_id)   //TODO check correct client in buffer
-		{
-			op = buffer[i].buffer;
-			buffer[i].ptrs = 0;
-			bool = 1;
-		}
-	}
+void read_driver_client_buffer(struct rnd_access_buffer *buffer, int client_id, int buffer_size, struct operation *op) {
+    int bool = 0;
+    for (int i = 0; i < buffer_size && bool == 0; i++) {
+        if (*(buffer[i].ptrs) == 1 &&
+            buffer[i].buffer->receiving_client == client_id)  // TODO check correct client in buffer
+        {
+            op = buffer[i].buffer;
+            buffer[i].ptrs = 0;
+            bool = 1;
+        }
+    }
 
-	if (bool == 0) {
-		op->id = -1;
-	}
+    if (bool == 0) {
+        op->id = -1;
+    }
 }
