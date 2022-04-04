@@ -1,14 +1,7 @@
-<<<<<<< HEAD
 #include "../include/memory.h"
 #include "../include/main.h"
 #include "../include/client.h"
 
-=======
-
-
-#include "main.h"
-#include "memory.h"
->>>>>>> acb0409c3a32e8f52b71c80324c9d36913500980
 
 /* Função principal de um Cliente. Deve executar um ciclo infinito onde em
  * cada iteração lê uma operação da main e data->terminate ainda for igual a 0,
