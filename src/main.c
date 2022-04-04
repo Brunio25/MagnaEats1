@@ -1,15 +1,9 @@
-<<<<<<< HEAD
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
 #include <ctype.h>
-=======
->>>>>>> acb0409c3a32e8f52b71c80324c9d36913500980
 #include "../include/main.h"
 #include "../include/process.h"
-
-#include <stdio.h>
-#include <stdlib.h>
 
 /* Função que lê os argumentos da aplicação, nomeadamente o número
  * máximo de operações, o tamanho dos buffers de memória partilhada
