@@ -1,6 +1,7 @@
 #include "../include/memory.h"
 #include "../include/main.h"
 #include "../include/client.h"
+#include <stdio.h>
 
 
 /* Função principal de um Cliente. Deve executar um ciclo infinito onde em
@@ -14,9 +15,9 @@
 int execute_client(int client_id, struct communication_buffers* buffers, struct main_data* data) {
     int counter = 0;
     while (1) {
-        struct operation* op;
+        struct operation* op = NULL;
         client_get_operation(op, client_id, buffers, data);
-        if (data->terminate == 0) {
+        if (*data->terminate == 0) {
             if (op->id != -1) {
                 client_process_operation(op, client_id, data, &counter);
             }
@@ -32,7 +33,7 @@ int execute_client(int client_id, struct communication_buffers* buffers, struct 
  * verificar se data->terminate tem valor 1. Em caso afirmativo, retorna imediatamente da função.
  */
 void client_get_operation(struct operation* op, int client_id, struct communication_buffers* buffers, struct main_data* data) {
-    if (data->terminate != 1) {
+    if (*data->terminate != 1) {
         read_driver_client_buffer(buffers->main_rest, client_id, sizeof(buffers->main_rest), op);
     }
 
@@ -47,8 +48,8 @@ void client_process_operation(struct operation* op, int client_id, struct main_d
     op -> receiving_client = client_id;
     op -> status = 'C';
     struct operation *results = data -> results;
-    while( results < sizeof(results)) {
-        if (results == NULL) {      //TODO
+    while( results < data->results + sizeof(results)) {
+        if (results == NULL) {   
             results = op;
             break;
         }

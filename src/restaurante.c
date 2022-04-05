@@ -1,5 +1,7 @@
-#include "main.h"
-#include "memory.h"
+#include "../include/main.h"
+#include "../include/memory.h"
+#include "../include/restaurant.h"
+#include <stdio.h>
 
 /* Função principal de um Restaurante. Deve executar um ciclo infinito onde em
  * cada iteração lê uma operação da main e se e data->terminate ainda for igual a 0, processa-a e
@@ -12,9 +14,9 @@
 int execute_restaurant(int rest_id, struct communication_buffers *buffers, struct main_data *data) {
     int counter = 0;
     while (1) {
-        struct operation *op;
+        struct operation *op = NULL;
         restaurant_receive_operation(op, rest_id, buffers, data);
-        if (data->terminate == 0) {
+        if (*data->terminate == 0) {
             if (op->id != -1) {
                 restaurant_process_operation(op, rest_id, data, &counter);
                 restaurant_forward_operation(op, buffers, data);
@@ -32,7 +34,7 @@ int execute_restaurant(int rest_id, struct communication_buffers *buffers, struc
  * Em caso afirmativo, retorna imediatamente da função.
  */
 void restaurant_receive_operation(struct operation *op, int rest_id, struct communication_buffers *buffers, struct main_data *data) {
-    if (data->terminate != 1) {
+    if (*data->terminate != 1) {
         read_main_rest_buffer(buffers->main_rest, rest_id, sizeof(buffers->main_rest), op);
     }
 
@@ -47,8 +49,8 @@ void restaurant_process_operation(struct operation *op, int rest_id, struct main
     op->receiving_rest = rest_id;
     op->status = 'R';
     struct operation *results = data->results;
-    while (results < sizeof(results)) {
-        if (results == NULL) {  // TODO
+    while (results < data->results + sizeof(results)) {
+        if (results == NULL) {
             results = op;
             break;
         }

@@ -1,11 +1,15 @@
 #include <stdio.h>
+#include <stdlib.h>
+#include <sys/types.h>
 #include <sys/wait.h>
+#include <unistd.h> 
 
-#include "client.h"
-#include "driver.h"
-#include "main.h"
-#include "memory.h"
-#include "restaurant.h"
+#include "../include/client.h"
+#include "../include/driver.h"
+#include "../include/main.h"
+#include "../include/memory.h"
+#include "../include/restaurant.h"
+#include "../include/process.h"
 
 /* Função que inicia um novo processo restaurante através da função fork do SO. O novo
  * processo irá executar a função execute_restaurant respetiva, fazendo exit do retorno.
