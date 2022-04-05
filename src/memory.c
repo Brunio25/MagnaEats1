@@ -7,6 +7,7 @@
 #include <sys/stat.h>
 #include <sys/wait.h>
 #include <unistd.h>
+#include <string.h>
 
 /* Função que reserva uma zona de memória partilhada com tamanho indicado
  * por size e nome name, preenche essa zona de memória com o valor 0, e
@@ -64,12 +65,15 @@ void destroy_dynamic_memory(void *ptr) { free(ptr); }
  * Se não houver nenhuma posição livre, não escreve nada.
  */
 void write_main_rest_buffer(struct rnd_access_buffer *buffer, int buffer_size, struct operation *op) {
-    for (int i = 0; i < buffer_size; i++) {
-        if (buffer[i].ptrs == 0) {
-            buffer[i].buffer = op;
-            *buffer[i].ptrs = 1;
+    for (int i = 0; i < buffer_size; i++) {;
+        if (buffer->ptrs[i] == 0) {
+            //buffer->buffer[i] = *op;
+            memcpy(&(buffer->buffer[i]), op, sizeof(struct operation));
+            buffer->ptrs[i] = 1;
+            
             break;
-        }
+        } 
+       
     }
 }
 
@@ -111,9 +115,9 @@ void read_main_rest_buffer(struct rnd_access_buffer *buffer, int rest_id, int bu
     int bool = 0;
     for (int i = 0; i < buffer_size && bool == 0; i++) {
         if (*buffer[i].ptrs == 1 &&
-            buffer[i].buffer->requested_rest == rest_id)  // TODO check correct restaurant in buffer
-        {
+            buffer[i].buffer->requested_rest == rest_id) { // TODO check correct restaurant in buffer
             op = buffer[i].buffer;
+            memcpy(op, &(buffer->buffer[i]), sizeof(struct operation));
             *buffer[i].ptrs = 0;
             bool = 1;
         }

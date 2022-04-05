@@ -1,6 +1,6 @@
 #ifndef MAIN_H_GUARD
 #define MAIN_H_GUARD
-
+#define MAX_REQUESTED_DISH_SIZE 100
 #include "memory.h"
 
 //Estrutura que agrega a informação necessária pela main do MAGNAEATS.

@@ -19,11 +19,16 @@ int launch_restaurant(int restaurant_id, struct communication_buffers* buffers, 
     int res;
 
     int pid = fork();
+    
     if (pid == -1) {
+        printf("falha:%d\n",pid);
         exit(1);
-    } else if (pid == 0) {
+    } else if (pid == 0) {  //TODO not launching
+        printf("filho: %d\n",pid);
+        printf("lanca");
         exit(execute_restaurant(restaurant_id, buffers, data));
     } else {
+        printf("else:%d\n",pid);
         res = wait_process(pid);
     }
 

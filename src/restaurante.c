@@ -2,6 +2,7 @@
 #include "../include/memory.h"
 #include "../include/restaurant.h"
 #include <stdio.h>
+#include <string.h>
 
 /* Função principal de um Restaurante. Deve executar um ciclo infinito onde em
  * cada iteração lê uma operação da main e se e data->terminate ainda for igual a 0, processa-a e
@@ -14,16 +15,23 @@
 int execute_restaurant(int rest_id, struct communication_buffers *buffers, struct main_data *data) {
     int counter = 0;
     while (1) {
-        struct operation *op = NULL;
+        struct operation *op;
+        op = create_dynamic_memory(sizeof(struct operation));
+	    op->requested_dish = create_dynamic_memory(MAX_REQUESTED_DISH_SIZE * sizeof(char));
         restaurant_receive_operation(op, rest_id, buffers, data);
+        printf("data : %d\n", *data->terminate);
         if (*data->terminate == 0) {
+                printf("boi");
             if (op->id != -1) {
                 restaurant_process_operation(op, rest_id, data, &counter);
                 restaurant_forward_operation(op, buffers, data);
             }
         } else {
+            printf("retorname");
             return counter;
         }
+        destroy_dynamic_memory(op->requested_dish);
+	    destroy_dynamic_memory(op);
     }
 }
 
@@ -49,9 +57,10 @@ void restaurant_process_operation(struct operation *op, int rest_id, struct main
     op->receiving_rest = rest_id;
     op->status = 'R';
     struct operation *results = data->results;
+        printf("bias\n");
     while (results < data->results + sizeof(results)) {
         if (results == NULL) {
-            results = op;
+            memcpy(&(data->results), op, sizeof(struct operation));
             break;
         }
         results++;
