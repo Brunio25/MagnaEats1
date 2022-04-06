@@ -23,7 +23,7 @@ struct circular_buffer {
 
 //estrutura que representa um buffer de acesso aleatório
 struct rnd_access_buffer {
-	int* ptrs;
+	int *ptrs;
 	struct operation* buffer;
 };
 

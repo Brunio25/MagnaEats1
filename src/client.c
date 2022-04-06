@@ -15,7 +15,10 @@
 int execute_client(int client_id, struct communication_buffers* buffers, struct main_data* data) {
     int counter = 0;
     while (1) {
-        struct operation* op = NULL;
+        struct operation* op;
+        op = create_dynamic_memory(sizeof(struct operation));
+	    op->requested_dish = create_dynamic_memory(MAX_REQUESTED_DISH_SIZE * sizeof(char));
+
         client_get_operation(op, client_id, buffers, data);
         if (*data->terminate == 0) {
             if (op->id != -1) {
@@ -50,10 +53,10 @@ void client_process_operation(struct operation* op, int client_id, struct main_d
     struct operation *results = data -> results;
     while( results < data->results + sizeof(results)) {
         if (results == NULL) {   
-            results = op;
+            //results = op;
+            counter++;
             break;
         }
         results++;
     }
-    counter++;
 }

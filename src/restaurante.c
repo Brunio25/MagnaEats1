@@ -18,21 +18,21 @@ int execute_restaurant(int rest_id, struct communication_buffers *buffers, struc
         struct operation *op;
         op = create_dynamic_memory(sizeof(struct operation));
 	    op->requested_dish = create_dynamic_memory(MAX_REQUESTED_DISH_SIZE * sizeof(char));
+        char *temp = op->requested_dish;
 
         restaurant_receive_operation(op, rest_id, buffers, data);
         if (*data->terminate == 0) {
             if (op->id != -1) {
-                printf("restaurante: %d\n",op->requesting_client);
-                printf("restaurante: %s\n",buffers->main_rest->buffer[0].requested_dish);
                 restaurant_process_operation(op, rest_id, data, &counter);
                 restaurant_forward_operation(op, buffers, data);
             }
         } else {
-            destroy_dynamic_memory(op->requested_dish);
+            destroy_dynamic_memory(temp);
 	        destroy_dynamic_memory(op);
             return counter;
         }
-        destroy_dynamic_memory(op->requested_dish);
+
+        destroy_dynamic_memory(temp);
 	    destroy_dynamic_memory(op);
     }
 }
@@ -45,7 +45,7 @@ int execute_restaurant(int rest_id, struct communication_buffers *buffers, struc
  */
 void restaurant_receive_operation(struct operation *op, int rest_id, struct communication_buffers *buffers, struct main_data *data) {
     if (*data->terminate != 1) {
-        read_main_rest_buffer(buffers->main_rest, rest_id, sizeof(buffers->main_rest), op);
+        read_main_rest_buffer(buffers->main_rest, rest_id, sizeof(buffers->main_rest), op); 
     }
     return;
 }
@@ -61,11 +61,11 @@ void restaurant_process_operation(struct operation *op, int rest_id, struct main
     while (results < data->results + sizeof(results)) {
         if (results->id == -1) {
             memcpy(results, op, sizeof(struct operation));
+            (*counter)++;
             break;
         }
         results++;
     }
-    counter++;
 }
 
 /* Função que escreve uma operação no buffer de memória partilhada entre

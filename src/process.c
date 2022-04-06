@@ -64,6 +64,11 @@ int launch_client(int client_id, struct communication_buffers* buffers, struct m
  */
 int wait_process(int process_id) {
     int res;
-    waitpid(process_id, &res, 0);  // TODO check if this is the correct implementation
-    return res;
+    
+    waitpid(process_id, &res, 1);  // TODO check if this is the correct implementation
+    if (WIFEXITED(res)) {
+        return WEXITSTATUS(res);
+    }
+    printf("ups\n");
+    exit(1);
 }

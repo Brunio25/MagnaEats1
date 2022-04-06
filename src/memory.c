@@ -67,12 +67,11 @@ void destroy_dynamic_memory(void *ptr) { free(ptr); }
 void write_main_rest_buffer(struct rnd_access_buffer *buffer, int buffer_size, struct operation *op) {
     for (int i = 0; i < buffer_size; i++) {
         if (buffer->ptrs[i] == 0) {
-            memcpy(&(buffer->buffer[i]), op, sizeof(struct operation));
+            strcpy(buffer->buffer[i].requested_dish, op->requested_dish);
             memcpy(buffer->buffer[i].requested_dish, op->requested_dish, sizeof(char) * MAX_REQUESTED_DISH_SIZE);
             buffer->ptrs[i] = 1;
             break;
         } 
-       
     }
 }
 
@@ -83,11 +82,13 @@ void write_main_rest_buffer(struct rnd_access_buffer *buffer, int buffer_size, s
  */
 void write_rest_driver_buffer(struct circular_buffer *buffer, int buffer_size, struct operation *op) {
     /* produzir um item em next_produced */
-    while (((buffer->ptrs->in + 1) % buffer_size) == buffer->ptrs->out)
-        ;
+    while (((buffer->ptrs->in + 1) % buffer_size) == buffer->ptrs->out);
+
     // buffer cheio; esperar que out seja avançado pelo consumidor
     /* do nothing */
-    buffer[buffer->ptrs->in].buffer = op;
+    //nos
+
+    memcpy(&(buffer->buffer[buffer->ptrs->in]), op, sizeof(struct operation));
     buffer->ptrs->in = (buffer->ptrs->in + 1) % buffer_size;
 }
 /* Função que escreve uma operação no buffer de memória partilhada entre os motoristas
@@ -97,11 +98,15 @@ void write_rest_driver_buffer(struct circular_buffer *buffer, int buffer_size, s
  */
 void write_driver_client_buffer(struct rnd_access_buffer *buffer, int buffer_size, struct operation *op) {
     for (int i = 0; i < buffer_size; i++) {
-        if (buffer[i].ptrs == 0) {
-            buffer[i].buffer = op;
-            *buffer[i].ptrs = 1;
+        if (buffer->ptrs[i] == 0) {
+            printf("\nbuffer: %s, op: %s\n", buffer->buffer[i].requested_dish, op->requested_dish);
+            //strcpy(buffer->buffer[i].requested_dish, op->requested_dish);
+            printf("\nwrite1\n");
+            memcpy(&buffer->buffer[i], op, sizeof(struct operation));
+            printf("\nwrite2\n");
+            buffer->ptrs[i] = 1;
             break;
-        }
+        } 
     }
 }
 
@@ -115,9 +120,8 @@ void read_main_rest_buffer(struct rnd_access_buffer *buffer, int rest_id, int bu
     for (int i = 0; i < buffer_size && bool == 0; i++) {
         if (buffer->ptrs[i] == 1 &&
             buffer->buffer[i].requested_rest == rest_id) {
-            memcpy(op->requested_dish, buffer->buffer[i].requested_dish, sizeof(char) * MAX_REQUESTED_DISH_SIZE);
-            printf("dish: %s\n", op->requested_dish);
-
+            //memcpy(op->requested_dish, buffer->buffer[i].requested_dish, sizeof(char) * MAX_REQUESTED_DISH_SIZE);
+            strcpy(op->requested_dish, buffer->buffer[i].requested_dish);
             memcpy(op, &(buffer->buffer[i]), sizeof(struct operation));
             buffer->ptrs[i] = 0;
             bool = 1;
@@ -138,10 +142,13 @@ void read_main_rest_buffer(struct rnd_access_buffer *buffer, int rest_id, int bu
 void read_rest_driver_buffer(struct circular_buffer *buffer, int buffer_size, struct operation *op) {
     if (buffer->ptrs->in == buffer->ptrs->out) {
         op->id = -1;
+        return;
     }
-
+    
     int out = buffer->ptrs->out;
-    op = buffer[out].buffer;
+
+    memcpy(op, &(buffer->buffer[out]), sizeof(struct operation));
+    memset(&(buffer->buffer[out]), -1, sizeof(struct operation));
     buffer->ptrs->out = (out + 1) % buffer_size;
 }
 
@@ -153,11 +160,11 @@ void read_rest_driver_buffer(struct circular_buffer *buffer, int buffer_size, st
 void read_driver_client_buffer(struct rnd_access_buffer *buffer, int client_id, int buffer_size, struct operation *op) {
     int bool = 0;
     for (int i = 0; i < buffer_size && bool == 0; i++) {
-        if (*(buffer[i].ptrs) == 1 &&
-            buffer[i].buffer->receiving_client == client_id)  // TODO check correct client in buffer
-        {
-            op = buffer[i].buffer;
-            buffer[i].ptrs = 0;
+        if (buffer->ptrs[i] == 1 &&
+            buffer->buffer[i].requesting_client == client_id) {
+            strcpy(op->requested_dish, buffer->buffer[i].requested_dish);
+            memcpy(op, &(buffer->buffer[i]), sizeof(struct operation));
+            buffer->ptrs[i] = 0;
             bool = 1;
         }
     }
@@ -165,4 +172,5 @@ void read_driver_client_buffer(struct rnd_access_buffer *buffer, int client_id, 
     if (bool == 0) {
         op->id = -1;
     }
+    return;
 }

@@ -43,9 +43,9 @@ void create_shared_memory_buffers(struct main_data* data, struct communication_b
 
 	//buffers -> main_rest = create_shared_memory("/main_rest", data -> buffers_size * sizeof(struct rnd_access_buffer));
 	buffers->main_rest->buffer = create_shared_memory("/main_rest_buffer", data->buffers_size * sizeof(struct operation));
-	for(int i = 0; i < data->n_clients; i++) {
-		buffers->main_rest->buffer[i].requested_dish = create_shared_memory("/requested_dishh" + i, MAX_REQUESTED_DISH_SIZE * sizeof(char));
-	}
+	// for(int i = 0; i < data->n_clients; i++) {
+		buffers->main_rest->buffer->requested_dish = create_shared_memory("/requested_dishh", MAX_REQUESTED_DISH_SIZE * sizeof(char));
+	// }
 	buffers->main_rest->ptrs = create_shared_memory("/main_rest_ptrs", data->buffers_size * sizeof(int));
 	
 	//buffers -> rest_driv = create_shared_memory("/rest_driv", data -> buffers_size * sizeof(struct circular_buffer));
@@ -56,18 +56,18 @@ void create_shared_memory_buffers(struct main_data* data, struct communication_b
 	buffers->driv_cli->buffer = create_shared_memory("/driv_cli_buffer", data->buffers_size * sizeof(struct operation));
 	buffers->driv_cli->ptrs = create_shared_memory("/driv_cli_ptrs", data->buffers_size * sizeof(int));
 	
-	data -> results = create_shared_memory("/results", data -> n_clients * sizeof(struct operation));
+	data -> results = create_shared_memory("/results", data -> max_ops * sizeof(struct operation));
 	data -> terminate = create_shared_memory("/terminate", sizeof(int));
 
-	for(int i = 0; i < data->n_clients; i++) {
-		data -> results[i].requested_dish = create_shared_memory("/requested_dish" + i, MAX_REQUESTED_DISH_SIZE * sizeof(char));
-	}
+	// for(int i = 0; i < data->n_clients; i++) {
+	// 	data -> results[i].requested_dish = create_shared_memory("/requested_dish" + i, MAX_REQUESTED_DISH_SIZE * sizeof(char));
+	// }
 	
 	memset(buffers->main_rest->ptrs, 0, data->buffers_size * sizeof(int));
 	memset(buffers->rest_driv->ptrs, 0, data->buffers_size * sizeof(struct pointers));
 	memset(buffers->driv_cli->ptrs, 0, data->buffers_size * sizeof(int));
 	memset(data -> terminate, 0, sizeof(int));
-	memset(data -> results, -1, data -> n_clients * sizeof(struct operation));
+	memset(data -> results, -1, data->max_ops * sizeof(struct operation));
 }
 
 /* Função que inicia os processos dos restaurantes, motoristas e
@@ -111,7 +111,6 @@ void printHelp() {
 void user_interaction(struct communication_buffers* buffers, struct main_data* data) {
 	char line[8];
 	int counter = 0;
-
 	printHelp();
 	while (1) {
 		printf("Introduzir ação:\n");
@@ -192,8 +191,6 @@ void create_request(int* op_counter, struct communication_buffers* buffers, stru
 	strcpy(op->requested_dish, dish);
 
 	write_main_rest_buffer(buffers->main_rest, data->buffers_size, op);
-	// printf("main: %c\n",buffers->main_rest->buffer[0].status);
-	printf("main: %s\n",buffers->main_rest->buffer[0].requested_dish);
 	printf("O pedido #%d foi criado.\n", *op_counter);
 
 	destroy_dynamic_memory(op->requested_dish);
@@ -228,7 +225,7 @@ void read_status(struct main_data* data) {
 	
 	struct operation* results = data->results;
 	while (results < data->results + sizeof(results)) {
-		printf("id: %d dish: %s\n", results->id, results->requested_dish);
+		//printf("id: %d dish: %s\n", results->id, results->requested_dish);
 			if (results->id == id) { //TODO does not work in Invalid status operation
 				if(results->requested_rest != -1 && results->requesting_client != -1) {
 					printf("Pedido %d com estado %c requisitado pelo cliente %d ao restaurante %d ", id, results->status, results->requesting_client,results->requested_rest);
