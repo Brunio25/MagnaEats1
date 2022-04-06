@@ -16,23 +16,16 @@
  * O processo pai devolve o pid do processo criado.
  */
 int launch_restaurant(int restaurant_id, struct communication_buffers* buffers, struct main_data* data) {
-    int res;
-
     int pid = fork();
     
     if (pid == -1) {
-        printf("falha:%d\n",pid);
         exit(1);
-    } else if (pid == 0) {  //TODO not launching
-        printf("filho: %d\n",pid);
-        printf("lanca");
+    } else if (pid == 0) {
         exit(execute_restaurant(restaurant_id, buffers, data));
     } else {
-        printf("else:%d\n",pid);
-        res = wait_process(pid);
+        return pid;
     }
-
-    return res;
+    
 }
 
 /* Função que inicia um novo processo motorista através da função fork do SO. O novo
@@ -40,18 +33,15 @@ int launch_restaurant(int restaurant_id, struct communication_buffers* buffers, 
  * O processo pai devolve o pid do processo criado.
  */
 int launch_driver(int driver_id, struct communication_buffers* buffers, struct main_data* data) {
-    int res;
-
+   
     int pid = fork();
     if (pid == -1) {
         exit(1);
     } else if (pid == 0) {
         exit(execute_driver(driver_id, buffers, data));
     } else {
-        res = wait_process(pid);
+        return pid;
     }
-
-    return res;
 }
 
 /* Função que inicia um novo processo cliente através da função fork do SO. O novo
@@ -59,18 +49,14 @@ int launch_driver(int driver_id, struct communication_buffers* buffers, struct m
  * O processo pai devolve o pid do processo criado.
  */
 int launch_client(int client_id, struct communication_buffers* buffers, struct main_data* data) {
-    int res;
-
     int pid = fork();
     if (pid == -1) {
         exit(1);
     } else if (pid == 0) {
         exit(execute_client(client_id, buffers, data));
     } else {
-        res = wait_process(pid);
+        return pid;
     }
-
-    return res;
 }
 
 /* Função que espera que um processo termine através da função waitpid.

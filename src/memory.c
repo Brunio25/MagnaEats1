@@ -1,5 +1,5 @@
 #include "../include/memory.h"
-
+#include "../include/main.h"
 #include <fcntl.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -65,12 +65,11 @@ void destroy_dynamic_memory(void *ptr) { free(ptr); }
  * Se não houver nenhuma posição livre, não escreve nada.
  */
 void write_main_rest_buffer(struct rnd_access_buffer *buffer, int buffer_size, struct operation *op) {
-    for (int i = 0; i < buffer_size; i++) {;
+    for (int i = 0; i < buffer_size; i++) {
         if (buffer->ptrs[i] == 0) {
-            //buffer->buffer[i] = *op;
             memcpy(&(buffer->buffer[i]), op, sizeof(struct operation));
+            memcpy(buffer->buffer[i].requested_dish, op->requested_dish, sizeof(char) * MAX_REQUESTED_DISH_SIZE);
             buffer->ptrs[i] = 1;
-            
             break;
         } 
        
@@ -114,11 +113,13 @@ void write_driver_client_buffer(struct rnd_access_buffer *buffer, int buffer_siz
 void read_main_rest_buffer(struct rnd_access_buffer *buffer, int rest_id, int buffer_size, struct operation *op) {
     int bool = 0;
     for (int i = 0; i < buffer_size && bool == 0; i++) {
-        if (*buffer[i].ptrs == 1 &&
-            buffer[i].buffer->requested_rest == rest_id) { // TODO check correct restaurant in buffer
-            op = buffer[i].buffer;
+        if (buffer->ptrs[i] == 1 &&
+            buffer->buffer[i].requested_rest == rest_id) {
+            memcpy(op->requested_dish, buffer->buffer[i].requested_dish, sizeof(char) * MAX_REQUESTED_DISH_SIZE);
+            printf("dish: %s\n", op->requested_dish);
+
             memcpy(op, &(buffer->buffer[i]), sizeof(struct operation));
-            *buffer[i].ptrs = 0;
+            buffer->ptrs[i] = 0;
             bool = 1;
         }
     }
@@ -126,6 +127,7 @@ void read_main_rest_buffer(struct rnd_access_buffer *buffer, int rest_id, int bu
     if (bool == 0) {
         op->id = -1;
     }
+    return;
 }
 
 /* Função que lê uma operação do buffer de memória partilhada entre os restaurantes e os motoristas,

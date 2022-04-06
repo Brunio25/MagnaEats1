@@ -18,16 +18,18 @@ int execute_restaurant(int rest_id, struct communication_buffers *buffers, struc
         struct operation *op;
         op = create_dynamic_memory(sizeof(struct operation));
 	    op->requested_dish = create_dynamic_memory(MAX_REQUESTED_DISH_SIZE * sizeof(char));
+
         restaurant_receive_operation(op, rest_id, buffers, data);
-        printf("data : %d\n", *data->terminate);
         if (*data->terminate == 0) {
-                printf("boi");
             if (op->id != -1) {
+                printf("restaurante: %d\n",op->requesting_client);
+                printf("restaurante: %s\n",buffers->main_rest->buffer[0].requested_dish);
                 restaurant_process_operation(op, rest_id, data, &counter);
                 restaurant_forward_operation(op, buffers, data);
             }
         } else {
-            printf("retorname");
+            destroy_dynamic_memory(op->requested_dish);
+	        destroy_dynamic_memory(op);
             return counter;
         }
         destroy_dynamic_memory(op->requested_dish);
@@ -45,7 +47,6 @@ void restaurant_receive_operation(struct operation *op, int rest_id, struct comm
     if (*data->terminate != 1) {
         read_main_rest_buffer(buffers->main_rest, rest_id, sizeof(buffers->main_rest), op);
     }
-
     return;
 }
 
@@ -57,10 +58,9 @@ void restaurant_process_operation(struct operation *op, int rest_id, struct main
     op->receiving_rest = rest_id;
     op->status = 'R';
     struct operation *results = data->results;
-        printf("bias\n");
     while (results < data->results + sizeof(results)) {
-        if (results == NULL) {
-            memcpy(&(data->results), op, sizeof(struct operation));
+        if (results->id == -1) {
+            memcpy(results, op, sizeof(struct operation));
             break;
         }
         results++;

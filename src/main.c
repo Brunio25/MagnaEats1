@@ -2,6 +2,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <ctype.h>
+#include <unistd.h> 
 #include "../include/main.h"
 #include "../include/process.h"
 
@@ -30,7 +31,6 @@ void create_dynamic_memory_buffers(struct main_data* data) {
 	data -> client_pids = create_dynamic_memory(data -> n_clients * sizeof(int));
 	data -> driver_pids = create_dynamic_memory(data -> n_drivers * sizeof(int));
 	data -> restaurant_pids = create_dynamic_memory(data -> n_restaurants * sizeof(int));
-	
 }
 
 /* Função que reserva a memória partilhada necessária para a execução do
@@ -41,26 +41,33 @@ void create_dynamic_memory_buffers(struct main_data* data) {
 */
 void create_shared_memory_buffers(struct main_data* data, struct communication_buffers* buffers) {
 
-	buffers -> main_rest = create_shared_memory("/main_rest", data -> buffers_size * sizeof(struct rnd_access_buffer));
+	//buffers -> main_rest = create_shared_memory("/main_rest", data -> buffers_size * sizeof(struct rnd_access_buffer));
 	buffers->main_rest->buffer = create_shared_memory("/main_rest_buffer", data->buffers_size * sizeof(struct operation));
+	for(int i = 0; i < data->n_clients; i++) {
+		buffers->main_rest->buffer[i].requested_dish = create_shared_memory("/requested_dishh" + i, MAX_REQUESTED_DISH_SIZE * sizeof(char));
+	}
 	buffers->main_rest->ptrs = create_shared_memory("/main_rest_ptrs", data->buffers_size * sizeof(int));
 	
-	buffers -> rest_driv = create_shared_memory("/rest_driv", data -> buffers_size * sizeof(struct circular_buffer));
+	//buffers -> rest_driv = create_shared_memory("/rest_driv", data -> buffers_size * sizeof(struct circular_buffer));
 	buffers->rest_driv->buffer = create_shared_memory("/rest_driv_buffer", data->buffers_size * sizeof(struct operation));
 	buffers->rest_driv->ptrs = create_shared_memory("/rest_driv_ptrs", data->buffers_size * sizeof(struct pointers));
-
-	buffers -> driv_cli = create_shared_memory("/driv_cli", data -> buffers_size * sizeof(struct rnd_access_buffer));
+	
+	//buffers -> driv_cli = create_shared_memory("/driv_cli", data -> buffers_size * sizeof(struct rnd_access_buffer));
 	buffers->driv_cli->buffer = create_shared_memory("/driv_cli_buffer", data->buffers_size * sizeof(struct operation));
 	buffers->driv_cli->ptrs = create_shared_memory("/driv_cli_ptrs", data->buffers_size * sizeof(int));
-
+	
 	data -> results = create_shared_memory("/results", data -> n_clients * sizeof(struct operation));
 	data -> terminate = create_shared_memory("/terminate", sizeof(int));
-	data -> results = create_shared_memory("/requested_dish", MAX_REQUESTED_DISH_SIZE * sizeof(char));
 
+	for(int i = 0; i < data->n_clients; i++) {
+		data -> results[i].requested_dish = create_shared_memory("/requested_dish" + i, MAX_REQUESTED_DISH_SIZE * sizeof(char));
+	}
+	
 	memset(buffers->main_rest->ptrs, 0, data->buffers_size * sizeof(int));
 	memset(buffers->rest_driv->ptrs, 0, data->buffers_size * sizeof(struct pointers));
 	memset(buffers->driv_cli->ptrs, 0, data->buffers_size * sizeof(int));
 	memset(data -> terminate, 0, sizeof(int));
+	memset(data -> results, -1, data -> n_clients * sizeof(struct operation));
 }
 
 /* Função que inicia os processos dos restaurantes, motoristas e
@@ -81,6 +88,7 @@ void launch_processes(struct communication_buffers* buffers, struct main_data* d
 	for (i = 0; i < data->n_clients; i++) {
 		data->client_pids[i] = launch_client(i, buffers, data);
 	}
+	
 }
 
 /* Função que imprime a informação sobre os comandos disponiveis
@@ -184,10 +192,13 @@ void create_request(int* op_counter, struct communication_buffers* buffers, stru
 	strcpy(op->requested_dish, dish);
 
 	write_main_rest_buffer(buffers->main_rest, data->buffers_size, op);
-	//pritnf("%s", );
+	// printf("main: %c\n",buffers->main_rest->buffer[0].status);
+	printf("main: %s\n",buffers->main_rest->buffer[0].requested_dish);
 	printf("O pedido #%d foi criado.\n", *op_counter);
+
 	destroy_dynamic_memory(op->requested_dish);
 	destroy_dynamic_memory(op);
+
 	(*op_counter)++;
 }
 
@@ -218,7 +229,7 @@ void read_status(struct main_data* data) {
 	struct operation* results = data->results;
 	while (results < data->results + sizeof(results)) {
 		printf("id: %d dish: %s\n", results->id, results->requested_dish);
-			if (results->id == id && results->requested_dish != NULL) { //TODO does not work in Invalid status operation
+			if (results->id == id) { //TODO does not work in Invalid status operation
 				if(results->requested_rest != -1 && results->requesting_client != -1) {
 					printf("Pedido %d com estado %c requisitado pelo cliente %d ao restaurante %d ", id, results->status, results->requesting_client,results->requested_rest);
 					printf("com o prato %s, foi tratado pelo restaurante %d,", results->requested_dish, results->receiving_rest);
@@ -263,15 +274,15 @@ void wait_processes(struct main_data* data) {
 	int i = 0;
 	
 	for (i = 0; i < data->n_restaurants; i++) {
-		wait_process(data->restaurant_pids[i]);
+		data->restaurant_stats[i] = wait_process(data->restaurant_pids[i]);
 	}
 
 	for (i = 0; i < data->n_drivers; i++) {
-		wait_process(data->driver_pids[i]);
+		data->driver_stats[i] = wait_process(data->driver_pids[i]);
 	}
 
 	for (i = 0; i < data->n_clients; i++) {
-		wait_process(data->client_pids[i]);
+		data->client_stats[i] = wait_process(data->client_pids[i]);
 	}
 }
 
