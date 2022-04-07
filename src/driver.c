@@ -78,6 +78,6 @@ void driver_process_operation(struct operation* op, int driver_id, struct main_d
 void driver_send_answer(struct operation* op, struct communication_buffers* buffers, struct main_data* data) {
     printf("aqui\n");
     write_driver_client_buffer(buffers->driv_cli, sizeof(buffers->driv_cli), op);
-    //printf("%s\n",buffers->driv_cli->buffer[0].requested_dish);
+    printf("prat0 :%s\n",buffers->driv_cli->buffer[0].requested_dish);
     return;
 }

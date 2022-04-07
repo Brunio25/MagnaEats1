@@ -97,16 +97,18 @@ void write_rest_driver_buffer(struct circular_buffer *buffer, int buffer_size, s
  * Se não houver nenhuma posição livre, não escreve nada.
  */
 void write_driver_client_buffer(struct rnd_access_buffer *buffer, int buffer_size, struct operation *op) {
+    printf("ja ca tou\n");
     for (int i = 0; i < buffer_size; i++) {
+        printf("fodeu\n");
         if (buffer->ptrs[i] == 0) {
-            printf("\nbuffer: %s, op: %s\n", buffer->buffer[i].requested_dish, op->requested_dish);
+            printf("caguei\n");
             //strcpy(buffer->buffer[i].requested_dish, op->requested_dish);
             printf("\nwrite1\n");
             memcpy(&buffer->buffer[i], op, sizeof(struct operation));
             printf("\nwrite2\n");
             buffer->ptrs[i] = 1;
             break;
-        } 
+        }
     }
 }
 
