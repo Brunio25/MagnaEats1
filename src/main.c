@@ -6,14 +6,6 @@
 #include "../include/main.h"
 #include "../include/process.h"
 
-#include <sys/mman.h>
-#include <sys/stat.h>
-#include <sys/wait.h>
-#include <unistd.h>
-#include <string.h>
-#include <sys/ipc.h>
-#include <sys/shm.h>
-
 /* Função que lê os argumentos da aplicação, nomeadamente o número
  * máximo de operações, o tamanho dos buffers de memória partilhada
  * usados para comunicação, e o número de clientes, de motoristas e de
@@ -51,8 +43,6 @@ void create_shared_memory_buffers(struct main_data* data, struct communication_b
 	buffers->main_rest->buffer = create_shared_memory(STR_SHM_MAIN_REST_BUFFER , data->buffers_size * sizeof(struct operation));
 	buffers->main_rest->ptrs = create_shared_memory(STR_SHM_MAIN_REST_PTR , data->buffers_size * sizeof(int));
 
-	//printf("%p\n",buffers->main_rest->buffer->requested_dish);
-
 	buffers->rest_driv->buffer = create_shared_memory(STR_SHM_REST_DRIVER_BUFFER , data->buffers_size * sizeof(struct operation));
 	buffers->rest_driv->ptrs = create_shared_memory(STR_SHM_REST_DRIVER_PTR , data->buffers_size * sizeof(struct pointers));
 	
@@ -61,11 +51,6 @@ void create_shared_memory_buffers(struct main_data* data, struct communication_b
 	
 	data -> results = create_shared_memory(STR_SHM_RESULTS, data -> max_ops * sizeof(struct operation));
 	data -> terminate = create_shared_memory(STR_SHM_TERMINATE, sizeof(int));
-
-	/* for (int i = 0; i < data->buffers_size; i++) {
-	 	buffers->main_rest->buffer[i].requested_dish = create_dynamic_memory(MAX_REQUESTED_DISH_SIZE * sizeof(char)+1);
-	} */
-
 }
 
 /* Função que inicia os processos dos restaurantes, motoristas e
@@ -116,6 +101,7 @@ void user_interaction(struct communication_buffers* buffers, struct main_data* d
 
 		if(strcmp(line, "request") == 0) {
 			create_request(&counter, buffers, data);
+			sleep(0.100);
 		}
 		else if (strcmp(line, "status") == 0) {
 			read_status(data);
@@ -140,7 +126,6 @@ int isNumber(char* str) {
 			return 0;
 		}
 	}
-
 	return 1;
 }
 
@@ -175,7 +160,7 @@ void create_request(int* op_counter, struct communication_buffers* buffers, stru
 	
 	struct operation *op;
 	op = create_dynamic_memory(sizeof(struct operation));
-	op->requested_dish = create_dynamic_memory(MAX_REQUESTED_DISH_SIZE * sizeof(char));
+	//op->requested_dish = create_dynamic_memory(MAX_REQUESTED_DISH_SIZE * sizeof(char));
 	if (!isNumber(client)) {
 		op->requesting_client = -1;
 		op->requested_rest = -1;
@@ -186,10 +171,9 @@ void create_request(int* op_counter, struct communication_buffers* buffers, stru
 	}
 	op->id = *op_counter;
 	op->status = 'I';
-	strcpy(op->requested_dish, dish);
+	//strcpy(op->requested_dish, dish);
 
 	write_main_rest_buffer(buffers->main_rest, data->buffers_size, op);
-	printf("%d\n",buffers->main_rest->buffer[0].requested_rest);
 	printf("O pedido #%d foi criado.\n", *op_counter);
 
 	destroy_dynamic_memory(op->requested_dish);

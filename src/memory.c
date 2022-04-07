@@ -30,7 +30,7 @@ void *create_shared_memory(char *name, int size) {
         perror("shm-mmap");
         exit(2);
     }
-    memset(ptr, 0, size);
+    //memset(ptr, 0, size);
     return ptr;
 }
 
@@ -69,8 +69,6 @@ void write_main_rest_buffer(struct rnd_access_buffer *buffer, int buffer_size, s
     for (int i = 0; i < buffer_size; i++) {
         if (buffer->ptrs[i] == 0) {
             memcpy(&buffer->buffer[i], op, sizeof(struct operation));
-            strcpy(buffer->buffer[i].requested_dish, op->requested_dish);
-            //memcpy(&buffer->buffer[i].requested_dish, &op->requested_dish, (MAX_REQUESTED_DISH_SIZE+1) * sizeof(char));
             buffer->ptrs[i] = 1;
             break;
         } 
@@ -115,13 +113,10 @@ void write_driver_client_buffer(struct rnd_access_buffer *buffer, int buffer_siz
  */
 void read_main_rest_buffer(struct rnd_access_buffer *buffer, int rest_id, int buffer_size, struct operation *op) {
     int bool = 0;
-    // printf("ptr: %d, rest: %d\n", buffer->ptrs[0], buffer->buffer[0].requested_rest);
     for (int i = 0; i < buffer_size && bool == 0; i++) {
         if (buffer->ptrs[i] == 1 &&
             buffer->buffer[i].requested_rest == rest_id) {
-            strcpy(op->requested_dish, buffer->buffer[i].requested_dish);
             memcpy(op, &(buffer->buffer[i]), sizeof(struct operation));
-            printf("rs: %d", buffer->buffer[i].receiving_rest);
             buffer->ptrs[i] = 0;
             bool = 1;
         }
