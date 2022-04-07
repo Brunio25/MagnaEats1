@@ -6,6 +6,14 @@
 #include "../include/main.h"
 #include "../include/process.h"
 
+#include <sys/mman.h>
+#include <sys/stat.h>
+#include <sys/wait.h>
+#include <unistd.h>
+#include <string.h>
+#include <sys/ipc.h>
+#include <sys/shm.h>
+
 /* Função que lê os argumentos da aplicação, nomeadamente o número
  * máximo de operações, o tamanho dos buffers de memória partilhada
  * usados para comunicação, e o número de clientes, de motoristas e de
@@ -40,34 +48,26 @@ void create_dynamic_memory_buffers(struct main_data* data) {
 * Para tal, pode ser usada a função create_shared_memory.
 */
 void create_shared_memory_buffers(struct main_data* data, struct communication_buffers* buffers) {
+	buffers->main_rest->buffer = create_shared_memory(STR_SHM_MAIN_REST_BUFFER , data->buffers_size * sizeof(struct operation));
+	
+	buffers->main_rest->buffer->requested_dish = create_shared_memory(STR_SHM_MAIN_REST_BUFFER_REQUESTED_DISH , MAX_REQUESTED_DISH_SIZE * sizeof(char)+1);
 
-	//buffers -> main_rest = create_shared_memory("/main_rest", data -> buffers_size * sizeof(struct rnd_access_buffer));
-	buffers->main_rest->buffer = create_shared_memory("/main_rest_buffer", data->buffers_size * sizeof(struct operation));
-	// for(int i = 0; i < data->n_clients; i++) {
-		buffers->main_rest->buffer->requested_dish = create_shared_memory("/requested_dishh", MAX_REQUESTED_DISH_SIZE * sizeof(char));
-	// }
-	buffers->main_rest->ptrs = create_shared_memory("/main_rest_ptrs", data->buffers_size * sizeof(int));
+	buffers->main_rest->ptrs = create_shared_memory(STR_SHM_MAIN_REST_PTR , data->buffers_size * sizeof(int));
+	//printf("%p\n",buffers->main_rest->buffer->requested_dish);
+	printf("%p\n",&buffers->main_rest->buffer[0]);
+	buffers->rest_driv->buffer = create_shared_memory(STR_SHM_REST_DRIVER_BUFFER , data->buffers_size * sizeof(struct operation));
+	buffers->rest_driv->ptrs = create_shared_memory(STR_SHM_REST_DRIVER_PTR , data->buffers_size * sizeof(struct pointers));
 	
-	//buffers -> rest_driv = create_shared_memory("/rest_driv", data -> buffers_size * sizeof(struct circular_buffer));
-	buffers->rest_driv->buffer = create_shared_memory("/rest_driv_buffer", data->buffers_size * sizeof(struct operation));
-	buffers->rest_driv->ptrs = create_shared_memory("/rest_driv_ptrs", data->buffers_size * sizeof(struct pointers));
+	buffers->driv_cli->buffer = create_shared_memory(STR_SHM_DRIVER_CLIENT_BUFFER, data->buffers_size * sizeof(struct operation));
+	buffers->driv_cli->ptrs = create_shared_memory(STR_SHM_DRIVER_CLIENT_PTR, data->buffers_size * sizeof(int));
 	
-	//buffers -> driv_cli = create_shared_memory("/driv_cli", data -> buffers_size * sizeof(struct rnd_access_buffer));
-	buffers->driv_cli->buffer = create_shared_memory("/driv_cli_buffer", data->buffers_size * sizeof(struct operation));
-	buffers->driv_cli->ptrs = create_shared_memory("/driv_cli_ptrs", data->buffers_size * sizeof(int));
-	
-	data -> results = create_shared_memory("/results", data -> max_ops * sizeof(struct operation));
-	data -> terminate = create_shared_memory("/terminate", sizeof(int));
+	data -> results = create_shared_memory(STR_SHM_RESULTS, data -> max_ops * sizeof(struct operation));
+	data -> terminate = create_shared_memory(STR_SHM_TERMINATE, sizeof(int));
 
-	// for(int i = 0; i < data->n_clients; i++) {
-	// 	data -> results[i].requested_dish = create_shared_memory("/requested_dish" + i, MAX_REQUESTED_DISH_SIZE * sizeof(char));
-	// }
-	
-	memset(buffers->main_rest->ptrs, 0, data->buffers_size * sizeof(int));
-	memset(buffers->rest_driv->ptrs, 0, data->buffers_size * sizeof(struct pointers));
-	memset(buffers->driv_cli->ptrs, 0, data->buffers_size * sizeof(int));
-	memset(data -> terminate, 0, sizeof(int));
-	memset(data -> results, -1, data->max_ops * sizeof(struct operation));
+	/* for (int i = 0; i < data->buffers_size; i++) {
+	 	buffers->main_rest->buffer[i].requested_dish = create_dynamic_memory(MAX_REQUESTED_DISH_SIZE * sizeof(char)+1);
+	} */
+
 }
 
 /* Função que inicia os processos dos restaurantes, motoristas e
@@ -183,8 +183,8 @@ void create_request(int* op_counter, struct communication_buffers* buffers, stru
 		op->requested_rest = -1;
 	}
 	else {
-		op->requesting_client = atoi(client); 
 		op->requesting_client = atoi(client);
+		op->requested_rest = atoi(restaurant); 
 	}
 	op->id = *op_counter;
 	op->status = 'I';

@@ -18,6 +18,7 @@ int execute_client(int client_id, struct communication_buffers* buffers, struct 
         struct operation* op;
         op = create_dynamic_memory(sizeof(struct operation));
 	    op->requested_dish = create_dynamic_memory(MAX_REQUESTED_DISH_SIZE * sizeof(char));
+        char *temp = op->requested_dish;
 
         client_get_operation(op, client_id, buffers, data);
         if (*data->terminate == 0) {
@@ -25,10 +26,14 @@ int execute_client(int client_id, struct communication_buffers* buffers, struct 
                 client_process_operation(op, client_id, data, &counter);
             }
         } else {
+            destroy_dynamic_memory(temp);
+	        destroy_dynamic_memory(op);
             return counter;
         }
+
+        destroy_dynamic_memory(temp);
+        destroy_dynamic_memory(op);
     }
-    return counter;
 }
 
 /* Função que lê uma operação do buffer de memória partilhada entre os motoristas

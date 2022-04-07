@@ -45,7 +45,7 @@ int execute_restaurant(int rest_id, struct communication_buffers *buffers, struc
  */
 void restaurant_receive_operation(struct operation *op, int rest_id, struct communication_buffers *buffers, struct main_data *data) {
     if (*data->terminate != 1) {
-        read_main_rest_buffer(buffers->main_rest, rest_id, sizeof(buffers->main_rest), op); 
+        read_main_rest_buffer(buffers->main_rest, rest_id, sizeof(buffers->main_rest), op);
     }
     return;
 }
@@ -73,5 +73,6 @@ void restaurant_process_operation(struct operation *op, int rest_id, struct main
  */
 void restaurant_forward_operation(struct operation *op, struct communication_buffers *buffers, struct main_data *data) {
     write_rest_driver_buffer(buffers->rest_driv, sizeof(buffers->rest_driv), op);
+   // printf("prato: %s\n",buffers->main_rest->buffer[0].requested_dish);
     return;
 }

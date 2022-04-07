@@ -16,20 +16,21 @@
  */
 void *create_shared_memory(char *name, int size) {
     int *ptr;
+    
     int shm = shm_open(name, O_CREAT | O_RDWR, S_IRUSR | S_IWUSR);
     int ret = ftruncate(shm, size);
 
     if (ret == -1) {
-        perror("/shm");
+        perror("shm");
         exit(1);
     }
 
     ptr = mmap(0, size, PROT_READ | PROT_WRITE, MAP_SHARED, shm, 0);
     if (ptr == MAP_FAILED) {
-        perror("/shm-mmap");
+        perror("shm-mmap");
         exit(2);
     }
-
+    memset(ptr, 0, size);
     return ptr;
 }
 
@@ -67,8 +68,13 @@ void destroy_dynamic_memory(void *ptr) { free(ptr); }
 void write_main_rest_buffer(struct rnd_access_buffer *buffer, int buffer_size, struct operation *op) {
     for (int i = 0; i < buffer_size; i++) {
         if (buffer->ptrs[i] == 0) {
+            
+            memcpy(&buffer->buffer[i], op, sizeof(struct operation));
+            printf("write1: %p\n", buffer->buffer[i].requested_dish);
             strcpy(buffer->buffer[i].requested_dish, op->requested_dish);
-            memcpy(buffer->buffer[i].requested_dish, op->requested_dish, sizeof(char) * MAX_REQUESTED_DISH_SIZE);
+            //memcpy(&buffer->buffer[i].requested_dish, &op->requested_dish, (MAX_REQUESTED_DISH_SIZE+1) * sizeof(char));
+            printf("write2: %p\n", buffer->buffer[i].requested_dish);
+            printf("dish: %s\n", buffer->buffer[i].requested_dish);
             buffer->ptrs[i] = 1;
             break;
         } 
@@ -97,15 +103,9 @@ void write_rest_driver_buffer(struct circular_buffer *buffer, int buffer_size, s
  * Se não houver nenhuma posição livre, não escreve nada.
  */
 void write_driver_client_buffer(struct rnd_access_buffer *buffer, int buffer_size, struct operation *op) {
-    printf("ja ca tou\n");
     for (int i = 0; i < buffer_size; i++) {
-        printf("fodeu\n");
         if (buffer->ptrs[i] == 0) {
-            printf("caguei\n");
-            //strcpy(buffer->buffer[i].requested_dish, op->requested_dish);
-            printf("\nwrite1\n");
             memcpy(&buffer->buffer[i], op, sizeof(struct operation));
-            printf("\nwrite2\n");
             buffer->ptrs[i] = 1;
             break;
         }
@@ -119,10 +119,14 @@ void write_driver_client_buffer(struct rnd_access_buffer *buffer, int buffer_siz
  */
 void read_main_rest_buffer(struct rnd_access_buffer *buffer, int rest_id, int buffer_size, struct operation *op) {
     int bool = 0;
+    // printf("ptr: %d, rest: %d\n", buffer->ptrs[0], buffer->buffer[0].requested_rest);
     for (int i = 0; i < buffer_size && bool == 0; i++) {
         if (buffer->ptrs[i] == 1 &&
             buffer->buffer[i].requested_rest == rest_id) {
-            //memcpy(op->requested_dish, buffer->buffer[i].requested_dish, sizeof(char) * MAX_REQUESTED_DISH_SIZE);
+            printf("boas\n");
+            printf("read: %p\n", buffer->buffer[i].requested_dish);
+            printf("dish no read: %s\n", buffer->buffer[i].requested_dish);
+            printf("rest: %d\n",buffer->buffer[i].requested_rest);
             strcpy(op->requested_dish, buffer->buffer[i].requested_dish);
             memcpy(op, &(buffer->buffer[i]), sizeof(struct operation));
             buffer->ptrs[i] = 0;
