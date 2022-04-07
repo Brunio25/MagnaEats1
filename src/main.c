@@ -49,12 +49,10 @@ void create_dynamic_memory_buffers(struct main_data* data) {
 */
 void create_shared_memory_buffers(struct main_data* data, struct communication_buffers* buffers) {
 	buffers->main_rest->buffer = create_shared_memory(STR_SHM_MAIN_REST_BUFFER , data->buffers_size * sizeof(struct operation));
-	
-	buffers->main_rest->buffer->requested_dish = create_shared_memory(STR_SHM_MAIN_REST_BUFFER_REQUESTED_DISH , MAX_REQUESTED_DISH_SIZE * sizeof(char)+1);
-
 	buffers->main_rest->ptrs = create_shared_memory(STR_SHM_MAIN_REST_PTR , data->buffers_size * sizeof(int));
+
 	//printf("%p\n",buffers->main_rest->buffer->requested_dish);
-	printf("%p\n",&buffers->main_rest->buffer[0]);
+
 	buffers->rest_driv->buffer = create_shared_memory(STR_SHM_REST_DRIVER_BUFFER , data->buffers_size * sizeof(struct operation));
 	buffers->rest_driv->ptrs = create_shared_memory(STR_SHM_REST_DRIVER_PTR , data->buffers_size * sizeof(struct pointers));
 	
@@ -191,6 +189,7 @@ void create_request(int* op_counter, struct communication_buffers* buffers, stru
 	strcpy(op->requested_dish, dish);
 
 	write_main_rest_buffer(buffers->main_rest, data->buffers_size, op);
+	printf("%d\n",buffers->main_rest->buffer[0].requested_rest);
 	printf("O pedido #%d foi criado.\n", *op_counter);
 
 	destroy_dynamic_memory(op->requested_dish);
