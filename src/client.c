@@ -38,7 +38,7 @@ int execute_client(int client_id, struct communication_buffers* buffers, struct 
  */
 void client_get_operation(struct operation* op, int client_id, struct communication_buffers* buffers, struct main_data* data) {
     if (*data->terminate != 1) {
-        read_driver_client_buffer(buffers->main_rest, client_id, sizeof(buffers->main_rest), op);
+        read_driver_client_buffer(buffers->driv_cli, client_id, sizeof(buffers->main_rest), op);
     }
 
     return;

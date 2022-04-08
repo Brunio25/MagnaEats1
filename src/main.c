@@ -5,6 +5,7 @@
 #include <unistd.h> 
 #include "../include/main.h"
 #include "../include/process.h"
+#include "../include/main-private.h"
 
 /* Função que lê os argumentos da aplicação, nomeadamente o número
  * máximo de operações, o tamanho dos buffers de memória partilhada
@@ -101,7 +102,6 @@ void user_interaction(struct communication_buffers* buffers, struct main_data* d
 
 		if(strcmp(line, "request") == 0) {
 			create_request(&counter, buffers, data);
-			sleep(1);
 		}
 		else if (strcmp(line, "status") == 0) {
 			read_status(data);
@@ -146,14 +146,14 @@ void create_request(int* op_counter, struct communication_buffers* buffers, stru
 
 	scanf("%10s", client);
 	if (!isNumber(client)) {
-		//*dish = *client;
 		strcpy(dish, client);
+		strcpy(client, "-1");
 	}
 	else {
 		scanf("%10s", restaurant);
 		if (!isNumber(restaurant)) {
-			*dish = *restaurant;
-			*restaurant = *"-1";
+			strcpy(dish, restaurant);
+			strcpy(restaurant, "-1");
 		}
 		else {
 			scanf("%99s", dish);
@@ -178,7 +178,7 @@ void create_request(int* op_counter, struct communication_buffers* buffers, stru
 
 	struct operation* results = data->results;
 	while (results < data->results + sizeof(data->results)) {
-		if(!(results->status == 'I' || results->status == 'R' || results->status == 'D' || results->status == 'C')) { //TODO tenho questões
+		if(!(results->status == 'I' || results->status == 'R' || results->status == 'D' || results->status == 'C')) {
 			memcpy(results, op, sizeof(struct operation));
 			break;
 		}
@@ -188,9 +188,11 @@ void create_request(int* op_counter, struct communication_buffers* buffers, stru
 	write_main_rest_buffer(buffers->main_rest, data->buffers_size, op);
 	printf("O pedido #%d foi criado.\n", *op_counter);
 
-	destroy_dynamic_memory(op);
+	sleep(strlen(dish) * 0.012);
 
 	(*op_counter)++;
+
+	destroy_dynamic_memory(op);
 }
 
 /* Função que lê um id de operação do utilizador e verifica se a mesma
@@ -219,17 +221,27 @@ void read_status(struct main_data* data) {
 	
 	struct operation* results = data->results;
 	while (results < data->results + sizeof(results)) {
-			if (results->id == id && (results->status == 'I' || 
-				results->status == 'D' || results->status == 'C' || results->status == 'R')) { //TODO does not work in Invalid status operation
-				if(results->requested_rest != -1 && results->requesting_client != -1) {
-					printf("Pedido %d com estado %c requisitado pelo cliente %d ao restaurante %d ", id, results->status, results->requesting_client,results->requested_rest);
-					printf("com o prato %s, foi tratado pelo restaurante %d,", results->requested_dish, results->receiving_rest);
-					printf(" encaminhado pelo motorista %d, e enviado ao cliente %d!\n", results->receiving_driver, results->receiving_client);
+			if (results->id == id && (results->status == 'I' ||
+				results->status == 'D' || results->status == 'C' || results->status == 'R')) {
+				printf("status:  %c\n", results->status);
+				printf("Pedido %d com estado %c requisitado pelo cliente %d ao restaurante %d ", id, results->status, results->requesting_client,results->requested_rest);
+				printf("com o prato %s, ", results->requested_dish);
+				
+				if(results->requested_rest != -1 && results->requesting_client != -1 && results->status != 'I') {
+					printf("foi tratado pelo restaurante %d, ", results->receiving_rest);
+					printf("encaminhado pelo motorista %d, ", results->receiving_driver);
+
+					if (results->status == 'D') {
+						printf("mas ainda não foi recebido no cliente!\n");
+					}
+					else{
+						printf("e enviado ao cliente %d!\n", results->receiving_client);
+					}
 					return;
 				}
 				else {
-					printf("Pedido %d com estado %c requisitado pelo cliente %d ao restaurante %d ", id, results->status, results->requesting_client,results->requested_rest);
-					printf("com o prato %s, ainda não foi recebido no restaurante!\n",results->requested_dish);
+					// printf("Pedido %d com estado %c requisitado pelo cliente %d ao restaurante %d ", id, results->status, results->requesting_client,results->requested_rest);
+					printf("ainda não foi recebido no restaurante!\n");
 					return;
 				}
 			}

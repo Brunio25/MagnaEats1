@@ -68,10 +68,10 @@ int wait_process(int process_id) {
     fflush(stdout);
     int res;
     
-    waitpid(process_id, &res, WUNTRACED);  // TODO check if this is the correct implementation
-    if (WIFEXITED(res)!=0) {
+    waitpid(process_id, &res, WUNTRACED);
+    if (WIFEXITED(res)) {
         return WEXITSTATUS(res);
     }
-    printf("ups\n");
-    return 0;
+
+    exit(1);
 }

@@ -1,5 +1,5 @@
 OBJETOS = main.o memory.o client.o driver.o restaurante.o process.o
-main.o = main.h
+main.o = main.h process.h main-private.h
 memory.o = memory.h main.h
 client.o = memory.h main.h client.h
 driver.o = driver.h main.h memory.h

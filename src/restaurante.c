@@ -62,9 +62,8 @@ void restaurant_process_operation(struct operation *op, int rest_id, struct main
         results++;
     }
     printf("Restaurante recebeu pedido!\n");
-    fflush(stdout); //TODO porque?
+    fflush(stdout);
 }
-
 /* Função que escreve uma operação no buffer de memória partilhada entre
  * restaurantes e motoristas.
  */
