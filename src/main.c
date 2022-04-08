@@ -147,7 +147,7 @@ void create_request(int* op_counter, struct communication_buffers* buffers, stru
 	scanf("%10s", client);
 	if (!isNumber(client)) {
 		//*dish = *client;
-		strcpy(dish,client);
+		strcpy(dish, client);
 	}
 	else {
 		scanf("%10s", restaurant);
@@ -162,20 +162,23 @@ void create_request(int* op_counter, struct communication_buffers* buffers, stru
 	
 	struct operation *op;
 	op = create_dynamic_memory(sizeof(struct operation));
-	//op->requested_dish = create_dynamic_memory(MAX_REQUESTED_DISH_SIZE * sizeof(char));
+	op->requested_dish = create_dynamic_memory(MAX_REQUESTED_DISH_SIZE * sizeof(char));
+
+	op->id = *op_counter;
+	op->status = 'I';
+	strcpy(op->requested_dish, dish);
 	if (!isNumber(client)) {
 		op->requesting_client = -1;
 		op->requested_rest = -1;
 	}
 	else {
 		op->requesting_client = atoi(client);
-		op->requested_rest = atoi(restaurant); 
+		op->requested_rest = atoi(restaurant);
 	}
-	op->id = *op_counter;
-	op->status = 'I';
+
 	struct operation* results = data->results;
 	while (results < data->results + sizeof(data->results)) {
-		if(!(results->status == 'I' || results->status == 'R' || results->status == 'D' || results->status == 'C')) {
+		if(!(results->status == 'I' || results->status == 'R' || results->status == 'D' || results->status == 'C')) { //TODO tenho questões
 			memcpy(results, op, sizeof(struct operation));
 			break;
 		}
@@ -216,7 +219,6 @@ void read_status(struct main_data* data) {
 	
 	struct operation* results = data->results;
 	while (results < data->results + sizeof(results)) {
-		printf("id: %d status: %c\n", results->id, results->status);
 			if (results->id == id && (results->status == 'I' || 
 				results->status == 'D' || results->status == 'C' || results->status == 'R')) { //TODO does not work in Invalid status operation
 				if(results->requested_rest != -1 && results->requesting_client != -1) {

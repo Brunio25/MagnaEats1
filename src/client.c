@@ -53,7 +53,7 @@ void client_process_operation(struct operation* op, int client_id, struct main_d
     op -> receiving_client = client_id;
     op -> status = 'C';
     struct operation *results = data -> results;
-    while( results < data->results + sizeof(results)) {
+    while(results < data->results + sizeof(results)) {
         if (results->status == 'D') {  
             memcpy(results, op, sizeof(struct operation));
             (*counter)++;
