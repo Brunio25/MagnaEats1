@@ -1,10 +1,8 @@
 #ifndef CLIENT_H_GUARD
 #define CLIENT_H_GUARD
 
-#include "memory.h"
-#include "main.h"
-
-
+#include "../include/memory.h"
+#include "../include/main.h"
 
 /* Função principal de um Cliente. Deve executar um ciclo infinito onde em 
 * cada iteração lê uma operação da main e data->terminate ainda for igual a 0,

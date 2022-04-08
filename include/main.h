@@ -1,6 +1,5 @@
 #ifndef MAIN_H_GUARD
 #define MAIN_H_GUARD
-
 #include "memory.h"
 
 //Estrutura que agrega a informação necessária pela main do MAGNAEATS.
