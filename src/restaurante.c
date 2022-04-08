@@ -55,7 +55,7 @@ void restaurant_process_operation(struct operation *op, int rest_id, struct main
     op->status = 'R';
     struct operation *results = data->results;
     while (results < data->results + sizeof(results)) {
-        if (results->status == 'I' || results->status == 'D' || results->status == 'C' || results->status == 'R') {
+        if (results->status == 'I') {
             memcpy(results, op, sizeof(struct operation));
             (*counter)++;
             break;

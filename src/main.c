@@ -135,7 +135,7 @@ int isNumber(char* str) {
 * Imprime o id da operação e incrementa o contador de operações op_counter.
 */
 void create_request(int* op_counter, struct communication_buffers* buffers, struct main_data* data) {
-	if (*op_counter > data->max_ops) {
+	if (*op_counter >= data->max_ops) {
 		printf("Número máximo de operações atingido.\n");
 		return;
 	}
@@ -146,7 +146,8 @@ void create_request(int* op_counter, struct communication_buffers* buffers, stru
 
 	scanf("%10s", client);
 	if (!isNumber(client)) {
-		*dish = *client;
+		//*dish = *client;
+		strcpy(dish,client);
 	}
 	else {
 		scanf("%10s", restaurant);
@@ -172,11 +173,22 @@ void create_request(int* op_counter, struct communication_buffers* buffers, stru
 	}
 	op->id = *op_counter;
 	op->status = 'I';
-
-	//write_main_rest_buffer(buffers->main_rest, data->buffers_size, op);
+	struct operation* results = data->results;
+	printf("tamaho data: %ld\n",sizeof(data->results));
+	printf("tamanho op: %ld\n",sizeof(struct operation));
+	printf("tamanho: %ld\n",sizeof(data->results)/sizeof(struct operation));
+	while (results < data->results + sizeof(data->results)) {
+		printf("comia tuya mae\n");
+		if(!(results->status == 'I' || results->status == 'R' || results->status == 'D' || results->status == 'C')) {
+			memcpy(results, op, sizeof(struct operation));
+			break;
+		}
+		results++;
+	}
+	
+	write_main_rest_buffer(buffers->main_rest, data->buffers_size, op);
 	printf("O pedido #%d foi criado.\n", *op_counter);
 
-	destroy_dynamic_memory(op->requested_dish);
 	destroy_dynamic_memory(op);
 
 	(*op_counter)++;
@@ -208,8 +220,9 @@ void read_status(struct main_data* data) {
 	
 	struct operation* results = data->results;
 	while (results < data->results + sizeof(results)) {
-		//printf("id: %d dish: %s\n", results->id, results->requested_dish);
-			if (results->id == id) { //TODO does not work in Invalid status operation
+		printf("id: %d status: %c\n", results->id, results->status);
+			if (results->id == id && (results->status == 'I' || 
+				results->status == 'D' || results->status == 'C' || results->status == 'R')) { //TODO does not work in Invalid status operation
 				if(results->requested_rest != -1 && results->requesting_client != -1) {
 					printf("Pedido %d com estado %c requisitado pelo cliente %d ao restaurante %d ", id, results->status, results->requesting_client,results->requested_rest);
 					printf("com o prato %s, foi tratado pelo restaurante %d,", results->requested_dish, results->receiving_rest);
