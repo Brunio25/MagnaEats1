@@ -65,12 +65,13 @@ int launch_client(int client_id, struct communication_buffers* buffers, struct m
  * Devolve o retorno do processo, se este tiver terminado normalmente.
  */
 int wait_process(int process_id) {
+    fflush(stdout);
     int res;
     
-    waitpid(process_id, &res, 1);  // TODO check if this is the correct implementation
-    if (WIFEXITED(res)) {
+    waitpid(process_id, &res, WUNTRACED);  // TODO check if this is the correct implementation
+    if (WIFEXITED(res)!=0) {
         return WEXITSTATUS(res);
     }
     printf("ups\n");
-    exit(1);
+    return 0;
 }

@@ -174,11 +174,7 @@ void create_request(int* op_counter, struct communication_buffers* buffers, stru
 	op->id = *op_counter;
 	op->status = 'I';
 	struct operation* results = data->results;
-	printf("tamaho data: %ld\n",sizeof(data->results));
-	printf("tamanho op: %ld\n",sizeof(struct operation));
-	printf("tamanho: %ld\n",sizeof(data->results)/sizeof(struct operation));
 	while (results < data->results + sizeof(data->results)) {
-		printf("comia tuya mae\n");
 		if(!(results->status == 'I' || results->status == 'R' || results->status == 'D' || results->status == 'C')) {
 			memcpy(results, op, sizeof(struct operation));
 			break;
@@ -295,7 +291,7 @@ void write_statistics(struct main_data* data) {
 	for(int i = 0; i < data->n_clients; i++) {
 		printf("Cliente %d recebeu %d pedidos!\n",i , data->client_stats[i]);
 	}
-	
+	fflush(stdout);
 }
 
 /* Função que liberta todos os buffers de memória dinâmica e partilhada previamente

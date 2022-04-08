@@ -156,7 +156,6 @@ void read_driver_client_buffer(struct rnd_access_buffer *buffer, int client_id, 
     for (int i = 0; i < buffer_size && bool == 0; i++) {
         if (buffer->ptrs[i] == 1 &&
             buffer->buffer[i].requesting_client == client_id) {
-            strcpy(op->requested_dish, buffer->buffer[i].requested_dish);
             memcpy(op, &(buffer->buffer[i]), sizeof(struct operation));
             buffer->ptrs[i] = 0;
             bool = 1;
