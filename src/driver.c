@@ -21,7 +21,8 @@ int execute_driver(int driver_id, struct communication_buffers* buffers, struct 
 
         driver_receive_operation(op, buffers, data);
         if (*data->terminate == 0) {
-            if(op->id != -1) {
+            if(op->id != -1 && op->status == 'R') {
+                printf("drivfer id: %d  status : %c\n",op->id,op->status);
                 driver_process_operation(op, driver_id, data, &counter);
                 driver_send_answer(op, buffers, data);
             }

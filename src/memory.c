@@ -49,7 +49,7 @@ void destroy_shared_memory(char *name, void *ptr, int size) {
         exit(3);
     }
 
-    ret = shm_unlink("/shm");
+    ret = shm_unlink(name);
     if (ret == -1) {
         perror("/shm");
         exit(4);
