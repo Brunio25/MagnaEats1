@@ -13,7 +13,7 @@ LIBS = -lrt
 
 
 magnaeats: $(OBJETOS)
-	$(CC) $(addprefix $(OBJ_dir)/,$(OBJETOS)) -o magnaeats $(LIBS)
+	$(CC) $(addprefix $(OBJ_dir)/,$(OBJETOS)) -o bin/magnaeats $(LIBS)
 
 %.o: $(SRC_dir)/%.c $($@)
 	$(CC) $(CFLAGS) -o $(OBJ_dir)/$@ -c $<
