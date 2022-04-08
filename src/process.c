@@ -16,6 +16,7 @@
  * O processo pai devolve o pid do processo criado.
  */
 int launch_restaurant(int restaurant_id, struct communication_buffers* buffers, struct main_data* data) {
+    fflush(stdout);
     int pid = fork();
     
     if (pid == -1) {
@@ -33,7 +34,7 @@ int launch_restaurant(int restaurant_id, struct communication_buffers* buffers, 
  * O processo pai devolve o pid do processo criado.
  */
 int launch_driver(int driver_id, struct communication_buffers* buffers, struct main_data* data) {
-   
+    fflush(stdout);
     int pid = fork();
     if (pid == -1) {
         exit(1);
@@ -49,6 +50,7 @@ int launch_driver(int driver_id, struct communication_buffers* buffers, struct m
  * O processo pai devolve o pid do processo criado.
  */
 int launch_client(int client_id, struct communication_buffers* buffers, struct main_data* data) {
+    fflush(stdout);
     int pid = fork();
     if (pid == -1) {
         exit(1);

@@ -50,7 +50,6 @@ void restaurant_receive_operation(struct operation *op, int rest_id, struct comm
  * incrementando o contador de operações. Atualiza também a operação na estrutura data.
  */
 void restaurant_process_operation(struct operation *op, int rest_id, struct main_data *data, int *counter) {
-    printf("Restaurante recebeu pedido!\n");
     op->receiving_rest = rest_id;
     op->status = 'R';
     struct operation *results = data->results;
@@ -62,6 +61,8 @@ void restaurant_process_operation(struct operation *op, int rest_id, struct main
         }
         results++;
     }
+    printf("Restaurante recebeu pedido!\n");
+    fflush(stdout);
 }
 
 /* Função que escreve uma operação no buffer de memória partilhada entre

@@ -18,8 +18,6 @@ int execute_driver(int driver_id, struct communication_buffers* buffers, struct 
     while (1){
         struct operation* op;
         op = create_dynamic_memory(sizeof(struct operation));
-	    op->requested_dish = create_dynamic_memory(MAX_REQUESTED_DISH_SIZE * sizeof(char));
-        char *temp = op->requested_dish;
 
         driver_receive_operation(op, buffers, data);
         if (*data->terminate == 0) {
@@ -29,12 +27,10 @@ int execute_driver(int driver_id, struct communication_buffers* buffers, struct 
             }
         }
         else {
-            destroy_dynamic_memory(temp);
 	        destroy_dynamic_memory(op);
             return counter;
         }
 
-        destroy_dynamic_memory(temp);
 	    destroy_dynamic_memory(op);
     }
 }
@@ -48,7 +44,6 @@ void driver_receive_operation(struct operation* op, struct communication_buffers
     if (*data->terminate == 1) {
         return;
     }
-    
     read_rest_driver_buffer(buffers -> rest_driv, sizeof(buffers->rest_driv), op);
 }
 
@@ -58,6 +53,7 @@ void driver_receive_operation(struct operation* op, struct communication_buffers
 * incrementando o contador de operações. Atualiza também a operação na estrutura data.
 */
 void driver_process_operation(struct operation* op, int driver_id, struct main_data* data, int* counter) {
+    printf("Motorista recebeu pedido!\n");
     op -> receiving_driver = driver_id;
     op -> status = 'D';
     struct operation *results = data -> results;
@@ -68,7 +64,9 @@ void driver_process_operation(struct operation* op, int driver_id, struct main_d
             break;
         }
         results++;
-    }
+    } 
+    fflush(stdout);
+    
 }
 
 

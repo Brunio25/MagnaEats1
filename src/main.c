@@ -101,7 +101,7 @@ void user_interaction(struct communication_buffers* buffers, struct main_data* d
 
 		if(strcmp(line, "request") == 0) {
 			create_request(&counter, buffers, data);
-			sleep(0.100);
+			sleep(1);
 		}
 		else if (strcmp(line, "status") == 0) {
 			read_status(data);
