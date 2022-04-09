@@ -1,9 +1,14 @@
-#include "../include/memory.h"
-#include "../include/main.h"
+// authors:
+//     Bruno Soares fc57100
+//
+//
+
 #include "../include/client.h"
+#include "../include/main.h"
+#include "../include/memory.h"
+
 #include <stdio.h>
 #include <string.h>
-
 
 /* Função principal de um Cliente. Deve executar um ciclo infinito onde em
  * cada iteração lê uma operação da main e data->terminate ainda for igual a 0,
@@ -18,14 +23,14 @@ int execute_client(int client_id, struct communication_buffers* buffers, struct 
     while (1) {
         struct operation* op;
         op = create_dynamic_memory(sizeof(struct operation));
-	
+
         client_get_operation(op, client_id, buffers, data);
         if (*data->terminate == 0) {
             if (op->id != -1) {
                 client_process_operation(op, client_id, data, &counter);
             }
         } else {
-	        destroy_dynamic_memory(op);
+            destroy_dynamic_memory(op);
             return counter;
         }
         destroy_dynamic_memory(op);
@@ -50,11 +55,12 @@ void client_get_operation(struct operation* op, int client_id, struct communicat
  */
 void client_process_operation(struct operation* op, int client_id, struct main_data* data, int* counter) {
     printf("Cliente recebeu pedido!\n");
-    op -> receiving_client = client_id;
-    op -> status = 'C';
-    struct operation *results = data -> results;
-    while(results < data->results + sizeof(results)) {
-        if (results->status == 'D') {  
+    op->receiving_client = client_id;
+    op->status = 'C';
+    
+    struct operation* results = data->results;
+    while (results < data->results + sizeof(results)) {
+        if (results->status == 'D') {
             memcpy(results, op, sizeof(struct operation));
             (*counter)++;
             break;

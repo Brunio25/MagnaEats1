@@ -1,13 +1,19 @@
+// authors:
+//     Bruno Soares fc57100
+//
+//
+
 #include "../include/memory.h"
 #include "../include/main.h"
+
 #include <fcntl.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include <sys/mman.h>
 #include <sys/stat.h>
 #include <sys/wait.h>
 #include <unistd.h>
-#include <string.h>
 
 /* Função que reserva uma zona de memória partilhada com tamanho indicado
  * por size e nome name, preenche essa zona de memória com o valor 0, e
@@ -16,7 +22,7 @@
  */
 void *create_shared_memory(char *name, int size) {
     int *ptr;
-    
+
     int shm = shm_open(name, O_CREAT | O_RDWR, S_IRUSR | S_IWUSR);
     int ret = ftruncate(shm, size);
 
@@ -30,7 +36,7 @@ void *create_shared_memory(char *name, int size) {
         perror("shm-mmap");
         exit(2);
     }
-    //memset(ptr, 0, size);
+
     return ptr;
 }
 
@@ -71,7 +77,7 @@ void write_main_rest_buffer(struct rnd_access_buffer *buffer, int buffer_size, s
             memcpy(&buffer->buffer[i], op, sizeof(struct operation));
             buffer->ptrs[i] = 1;
             break;
-        } 
+        }
     }
 }
 
@@ -81,12 +87,7 @@ void write_main_rest_buffer(struct rnd_access_buffer *buffer, int buffer_size, s
  * Se não houver nenhuma posição livre, não escreve nada.
  */
 void write_rest_driver_buffer(struct circular_buffer *buffer, int buffer_size, struct operation *op) {
-    /* produzir um item em next_produced */
     while (((buffer->ptrs->in + 1) % buffer_size) == buffer->ptrs->out);
-
-    // buffer cheio; esperar que out seja avançado pelo consumidor
-    /* do nothing */
-    //nos
 
     memcpy(&(buffer->buffer[buffer->ptrs->in]), op, sizeof(struct operation));
     buffer->ptrs->in = (buffer->ptrs->in + 1) % buffer_size;
@@ -114,8 +115,7 @@ void write_driver_client_buffer(struct rnd_access_buffer *buffer, int buffer_siz
 void read_main_rest_buffer(struct rnd_access_buffer *buffer, int rest_id, int buffer_size, struct operation *op) {
     int bool = 0;
     for (int i = 0; i < buffer_size && bool == 0; i++) {
-        if (buffer->ptrs[i] == 1 &&
-            buffer->buffer[i].requested_rest == rest_id) {
+        if (buffer->ptrs[i] == 1 && buffer->buffer[i].requested_rest == rest_id) {
             memcpy(op, &(buffer->buffer[i]), sizeof(struct operation));
             buffer->ptrs[i] = 0;
             bool = 1;
@@ -138,7 +138,7 @@ void read_rest_driver_buffer(struct circular_buffer *buffer, int buffer_size, st
         op->id = -1;
         return;
     }
-    
+
     int out = buffer->ptrs->out;
 
     memcpy(op, &(buffer->buffer[out]), sizeof(struct operation));
@@ -154,8 +154,8 @@ void read_rest_driver_buffer(struct circular_buffer *buffer, int buffer_size, st
 void read_driver_client_buffer(struct rnd_access_buffer *buffer, int client_id, int buffer_size, struct operation *op) {
     int bool = 0;
     for (int i = 0; i < buffer_size && bool == 0; i++) {
-        if (buffer->ptrs[i] == 1 &&
-            buffer->buffer[i].requesting_client == client_id && buffer->buffer[i].status == 'D') {
+        if (buffer->ptrs[i] == 1 && buffer->buffer[i].requesting_client == client_id &&
+            buffer->buffer[i].status == 'D') {
             memcpy(op, &(buffer->buffer[i]), sizeof(struct operation));
             buffer->ptrs[i] = 0;
             bool = 1;

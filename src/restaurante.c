@@ -1,6 +1,12 @@
+// authors:
+//     Bruno Soares fc57100
+//
+//
+
 #include "../include/main.h"
 #include "../include/memory.h"
 #include "../include/restaurant.h"
+
 #include <stdio.h>
 #include <string.h>
 
@@ -25,10 +31,10 @@ int execute_restaurant(int rest_id, struct communication_buffers *buffers, struc
                 restaurant_forward_operation(op, buffers, data);
             }
         } else {
-	        destroy_dynamic_memory(op);
+            destroy_dynamic_memory(op);
             return counter;
         }
-	    destroy_dynamic_memory(op);
+        destroy_dynamic_memory(op);
     }
 }
 
@@ -50,8 +56,10 @@ void restaurant_receive_operation(struct operation *op, int rest_id, struct comm
  * incrementando o contador de operações. Atualiza também a operação na estrutura data.
  */
 void restaurant_process_operation(struct operation *op, int rest_id, struct main_data *data, int *counter) {
+    printf("Restaurante recebeu pedido!\n");
     op->receiving_rest = rest_id;
     op->status = 'R';
+
     struct operation *results = data->results;
     while (results < data->results + sizeof(results)) {
         if (results->status == 'I') {
@@ -61,7 +69,6 @@ void restaurant_process_operation(struct operation *op, int rest_id, struct main
         }
         results++;
     }
-    printf("Restaurante recebeu pedido!\n");
     fflush(stdout);
 }
 /* Função que escreve uma operação no buffer de memória partilhada entre

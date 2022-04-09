@@ -1,15 +1,21 @@
+// authors:
+//     Bruno Soares fc57100
+//
+//
+
+#include "../include/process.h"
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <sys/types.h>
 #include <sys/wait.h>
-#include <unistd.h> 
+#include <unistd.h>
 
 #include "../include/client.h"
 #include "../include/driver.h"
 #include "../include/main.h"
 #include "../include/memory.h"
 #include "../include/restaurant.h"
-#include "../include/process.h"
 
 /* Função que inicia um novo processo restaurante através da função fork do SO. O novo
  * processo irá executar a função execute_restaurant respetiva, fazendo exit do retorno.
@@ -18,7 +24,7 @@
 int launch_restaurant(int restaurant_id, struct communication_buffers* buffers, struct main_data* data) {
     fflush(stdout);
     int pid = fork();
-    
+
     if (pid == -1) {
         exit(1);
     } else if (pid == 0) {
@@ -26,7 +32,6 @@ int launch_restaurant(int restaurant_id, struct communication_buffers* buffers, 
     } else {
         return pid;
     }
-    
 }
 
 /* Função que inicia um novo processo motorista através da função fork do SO. O novo
@@ -67,7 +72,7 @@ int launch_client(int client_id, struct communication_buffers* buffers, struct m
 int wait_process(int process_id) {
     fflush(stdout);
     int res;
-    
+
     waitpid(process_id, &res, WUNTRACED);
     if (WIFEXITED(res)) {
         return WEXITSTATUS(res);
