@@ -1,6 +1,6 @@
 // authors:
-//     Bruno Soares fc57100
-//
+//     Bruno Soares    fc57100
+//     Renato Custódio fc56320
 //
 
 #include "../include/driver.h"

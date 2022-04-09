@@ -1,6 +1,6 @@
 // authors:
-//     Bruno Soares fc57100
-//
+//     Bruno Soares    fc57100
+//     Renato Custódio fc56320
 //
 
 #include "../include/main.h"
@@ -34,6 +34,7 @@ int execute_restaurant(int rest_id, struct communication_buffers *buffers, struc
             destroy_dynamic_memory(op);
             return counter;
         }
+        
         destroy_dynamic_memory(op);
     }
 }

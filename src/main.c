@@ -1,9 +1,11 @@
 // authors:
-//     Bruno Soares fc57100
-//
+//     Bruno Soares    fc57100
+//     Renato Custódio fc56320
 //
 
 #include "../include/main.h"
+#include "../include/process.h"
+#include "../include/main-private.h"
 
 #include <ctype.h>
 #include <stdio.h>
@@ -11,8 +13,7 @@
 #include <string.h>
 #include <unistd.h>
 
-#include "../include/main-private.h"
-#include "../include/process.h"
+
 
 // Função que verifica se uma string é composta apenas por digitos
 int isNumber(char* str) {
@@ -40,7 +41,7 @@ void main_args(int argc, char* argv[], struct main_data* data) {
     else {
         for (int i = 1; i <= 5; i++) {
             if (!isNumber(argv[i])) {
-                printf("Parâmetros incorretos! Exemplo de uso: ./bin/magnaeats 10 10 1 1 1\n");
+                printf("Parâmetros incorretos!\nExemplo de uso: ./bin/magnaeats 10 10 1 1 1\n");
                 valid = 0;
                 break;
             }
@@ -189,6 +190,7 @@ void create_request(int* op_counter, struct communication_buffers* buffers, stru
     op->id = *op_counter;
     op->status = 'I';
     strcpy(op->requested_dish, dish);
+
     if (!isNumber(client)) {
         op->requesting_client = -1;
         op->requested_rest = -1;
@@ -198,6 +200,7 @@ void create_request(int* op_counter, struct communication_buffers* buffers, stru
     }
 
     struct operation* results = data->results;
+
     while (results < data->results + sizeof(data->results)) {
         if (!(results->status == 'I' || results->status == 'R' || results->status == 'D' || results->status == 'C')) {
             memcpy(results, op, sizeof(struct operation));
@@ -238,6 +241,7 @@ void read_status(struct main_data* data) {
     }
 
     struct operation* results = data->results;
+    
     while (results < data->results + sizeof(results)) {
         if (results->id == id &&
             (results->status == 'I' || results->status == 'D' || results->status == 'C' || results->status == 'R')) {

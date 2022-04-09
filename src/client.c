@@ -1,6 +1,6 @@
 // authors:
-//     Bruno Soares fc57100
-//
+//     Bruno Soares    fc57100
+//     Renato Custódio fc56320
 //
 
 #include "../include/client.h"
@@ -33,6 +33,7 @@ int execute_client(int client_id, struct communication_buffers* buffers, struct 
             destroy_dynamic_memory(op);
             return counter;
         }
+
         destroy_dynamic_memory(op);
     }
 }
@@ -45,7 +46,6 @@ void client_get_operation(struct operation* op, int client_id, struct communicat
     if (*data->terminate != 1) {
         read_driver_client_buffer(buffers->driv_cli, client_id, sizeof(buffers->main_rest), op);
     }
-
     return;
 }
 

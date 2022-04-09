@@ -2,4 +2,5 @@ Uso: magnaeats max_ops buffers_size n_restaurants n_drivers n_clients
 Exemplo: ./bin/magnaeats 10 10 1 1 1
 
 authors:
-    Bruno Soares fc57100
+    Bruno Soares    fc57100
+    Renato Custódio fc56320
