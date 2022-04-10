@@ -1,7 +1,7 @@
 // authors:
 //     Bruno Soares    fc57100
 //     Renato Custódio fc56320
-//
+//     João Vedor      fc56311
 
 #include "../include/main.h"
 #include "../include/memory.h"
