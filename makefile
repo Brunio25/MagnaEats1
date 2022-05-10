@@ -9,7 +9,7 @@ OBJ_dir = obj
 CFLAGS = -Wall -g
 CC = gcc
 SRC_dir = src
-LIBS = -lrt
+LIBS = -lrt -lpthread
 
 
 magnaeats: $(OBJETOS)

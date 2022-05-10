@@ -22,14 +22,14 @@
  * processo irá executar a função execute_restaurant respetiva, fazendo exit do retorno.
  * O processo pai devolve o pid do processo criado.
  */
-int launch_restaurant(int restaurant_id, struct communication_buffers* buffers, struct main_data* data) {
+int launch_restaurant(int restaurant_id, struct communication_buffers* buffers, struct main_data* data, struct semaphores *sems) {
     fflush(stdout);
     int pid = fork();
 
     if (pid == -1) {
         exit(1);
     } else if (pid == 0) {
-        exit(execute_restaurant(restaurant_id, buffers, data));
+        exit(execute_restaurant(restaurant_id, buffers, data, sems));
     } else {
         return pid;
     }
@@ -39,14 +39,14 @@ int launch_restaurant(int restaurant_id, struct communication_buffers* buffers, 
  * processo irá executar a função execute_driver, fazendo exit do retorno.
  * O processo pai devolve o pid do processo criado.
  */
-int launch_driver(int driver_id, struct communication_buffers* buffers, struct main_data* data) {
+int launch_driver(int driver_id, struct communication_buffers* buffers, struct main_data* data, struct semaphores *sems) {
     fflush(stdout);
     int pid = fork();
 
     if (pid == -1) {
         exit(1);
     } else if (pid == 0) {
-        exit(execute_driver(driver_id, buffers, data));
+        exit(execute_driver(driver_id, buffers, data, sems));
     } else {
         return pid;
     }
@@ -56,14 +56,14 @@ int launch_driver(int driver_id, struct communication_buffers* buffers, struct m
  * processo irá executar a função execute_client, fazendo exit do retorno.
  * O processo pai devolve o pid do processo criado.
  */
-int launch_client(int client_id, struct communication_buffers* buffers, struct main_data* data) {
+int launch_client(int client_id, struct communication_buffers* buffers, struct main_data* data, struct semaphores *sems) {
     fflush(stdout);
     int pid = fork();
     
     if (pid == -1) {
         exit(1);
     } else if (pid == 0) {
-        exit(execute_client(client_id, buffers, data));
+        exit(execute_client(client_id, buffers, data, sems));
     } else {
         return pid;
     }
