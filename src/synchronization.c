@@ -4,6 +4,7 @@
 #include <string.h>
 #include <unistd.h>
 #include <fcntl.h>
+#include <math.h>  
 
 #include "../include/synchronization.h"
 
@@ -14,11 +15,11 @@
 sem_t *semaphore_create(char *name, int value)
 {
     sem_t *sem;
-    sem = sem_open(name + getuid(), O_CREAT, 0xFFFFFFFF, value);
-    if (sem = SEM_FAILED)
+    sem = sem_open(name, O_CREAT, 0xFFFFFFFF, value);
+    if (sem == SEM_FAILED)
     {
-        perror("full");
-        error(1);
+        perror("sem_create");
+        exit(1);
     }
 
     return sem;
@@ -31,11 +32,13 @@ void semaphore_destroy(char *name, sem_t *semaphore)
 
     if (sem_close(semaphore) == -1)
     {
-        perror("sem");
+        perror("sem_destroy");
+        exit(1);
     }
-    if (sem_unlink(name) == -1)
+    if (sem_unlink(name + getuid()) == -1)
     {
-        perror("sem");
+        perror("sem_destroy");
+        exit(1);
     }
 }
 
