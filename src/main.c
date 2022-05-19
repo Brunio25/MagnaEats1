@@ -7,13 +7,14 @@
 #include "../include/process.h"
 #include "../include/main-private.h"
 #include "../include/synchronization.h"
+#include "../include/metime.h"
 
 #include <ctype.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
-#include<sys/stat.h>
+#include <sys/stat.h>
 
 // Função que verifica se uma string é composta apenas por digitos
 int isNumber(char *str)
@@ -247,6 +248,7 @@ void create_request(int *op_counter, struct communication_buffers *buffers, stru
 
     op->id = *op_counter;
     op->status = 'I';
+    markTime(op->start_time); ///////////////////////////////////////////
     strcpy(op->requested_dish, dish);
 
     if (!isNumber(client))
@@ -520,6 +522,7 @@ int main(int argc, char *argv[])
     launch_processes(buffers, data, sems);
 
     user_interaction(buffers, data, sems);
+
     // release memory before terminating
     destroy_dynamic_memory(data);
     destroy_dynamic_memory(buffers->main_rest);

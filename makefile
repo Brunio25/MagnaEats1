@@ -1,4 +1,4 @@
-OBJETOS = main.o memory.o client.o driver.o restaurante.o process.o synchronization.o
+OBJETOS = main.o memory.o client.o driver.o restaurante.o process.o synchronization.o metime.o
 main.o = main.h process.h main-private.h synchronization.h
 memory.o = memory.h main.h
 client.o = memory.h main.h client.h
@@ -6,6 +6,7 @@ driver.o = driver.h main.h memory.h
 restaurante.o = main.h memory.h restaurante.h
 process.o = client.h driver.h main.h memory.h restaurante.h process.h
 synchronization.o = synchronization.h synchronization.c
+metime.o = client.h driver.h restaurante.h main.h memory.h
 
 
 
