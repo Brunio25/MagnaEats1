@@ -51,6 +51,9 @@ void main_args(int argc, char *argv[], struct main_data *data)
     }
 
     args = create_dynamic_memory(sizeof(struct args));
+    args->log_filename = create_dynamic_memory(100);
+    args->statistics_filename = create_dynamic_memory(100);
+
     if (readFile(argv[1], args) == -1) {
         perror("file_read_error");
         destroy_dynamic_memory(data);
@@ -62,6 +65,7 @@ void main_args(int argc, char *argv[], struct main_data *data)
     data->n_clients = args->n_clients;
     data->n_restaurants = args->n_restaurants;
     data->n_drivers = args->n_drivers;
+
 }
 
 /* Função que reserva a memória dinâmica necessária para a execução
@@ -147,6 +151,7 @@ void user_interaction(struct communication_buffers* buffers, struct main_data* d
     char line[8];
     int counter = 0;
     printHelp();
+    
     while (1)
     {
         //printf("trancar main\n");
@@ -154,18 +159,17 @@ void user_interaction(struct communication_buffers* buffers, struct main_data* d
         //semaphore_mutex_lock(sems->results_mutex);
        
         printf("Introduzir acao:\n");
-        scanf("%7s", line);
         size_t size = 100;
         char *buffer;
         buffer = create_dynamic_memory(size * sizeof(char));
         getline(&buffer, &size, stdin);
         appendInstruction(args->statistics_filename, buffer);
-        
         for (int i = strlen(buffer) - 1; i >= 0; i--) {
             ungetc(buffer[i], stdin);
         }
-        
 
+        scanf("%7s", line);
+        
         // semaphore_mutex_unlock(sems->results_mutex);
 
         //printf("destrancar main\n");

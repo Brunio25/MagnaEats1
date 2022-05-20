@@ -18,7 +18,10 @@ void appendInstruction(char *filename, char *str) {
     char buffer[26];
     strftime(buffer, 26, "%Y-%m-%d %H:%M:%S", info);
 
-    char* cat = strcat(buffer, str);
+    char* cat = strcat(buffer," ");
+    cat = strcat(cat, str);
+
+
     fputs(cat, file);
 
     fclose(file);

@@ -9,7 +9,7 @@
 int readFile(char* filename, struct args* dest) {
     FILE *file;
     int args[6];
-
+    
     struct stat buff;
     int exist = stat(filename, &buff);
     if (exist == -1) {
@@ -24,25 +24,34 @@ int readFile(char* filename, struct args* dest) {
     int i = 0;
     while (fgets(token, n, file) != NULL)
     {
-        printf("token: %s\n", token);
+        ///// tira os "\n"
+        int count = 0;
+ 
+            for (int i = 0; token[i]; i++) {
+                if (token[i] != '\n'){
+                    token[count++] = token[i]; 
+                }
+            }                           
+            token[count] = '\0';
+        /////
         if (i == 5)  {
-            dest->log_filename = token;
-            continue;
-        }
+            memcpy(dest->log_filename,token, 100);
+        } else if (i == 6) {
+            memcpy(dest->statistics_filename,token,100); 
+        } else {
+            if (!isNumber(token)) {
+                printf("Parametros incorretos!\nExistem parametros incorretos no ficheiro !\n");
+                return -1;
+            }
+            if(i==7){
+                args[5] = atoi(token);
+                break;
+            }
 
-        if (i == 6) {
-            dest->statistics_filename = token;
-            continue;
-        }
+            args[i] = atoi(token);        
+        } 
+        i++; 
         
-        if (!isNumber(token)) {
-            printf("Parametros incorretos!\nExistem parametros incorretos no ficheiro !\n");
-            return -1;
-        }
-
-
-        args[i] = atoi(token);
-        i++;
     }
 
     dest->max_ops = args[0];
@@ -50,9 +59,9 @@ int readFile(char* filename, struct args* dest) {
     dest->n_restaurants = args[2];
     dest->n_drivers = args[3];
     dest->n_clients = args[4];
-
-    dest->alarm_time = args[5];
     
+    dest->alarm_time = args[5];
+
     fclose(file);
     
     return 0;
