@@ -35,7 +35,7 @@ void semaphore_destroy(char *name, sem_t *semaphore)
         perror("sem_destroy");
         exit(1);
     }
-    if (sem_unlink(name + getuid()) == -1)
+    if (sem_unlink(name) == -1)
     {
         perror("sem_destroy");
         exit(1);

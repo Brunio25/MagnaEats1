@@ -7,6 +7,7 @@
 #include "../include/main.h"
 #include "../include/memory.h"
 #include "../include/synchronization.h"
+#include "../include/metime.h"
 
 #include <stdio.h>
 #include <string.h>
@@ -56,6 +57,11 @@ void client_get_operation(struct operation *op, int client_id, struct communicat
         consume_begin(sems->driv_cli);
         read_driver_client_buffer(buffers->driv_cli, client_id, sizeof(buffers->main_rest), op);
         consume_end(sems->driv_cli);
+        
+        if (op->id == -1) {
+            semaphore_mutex_unlock(sems->driv_cli->full);
+            semaphore_mutex_lock(sems->driv_cli->empty);
+        }
     }
     return;
 }
@@ -77,6 +83,7 @@ void client_process_operation(struct operation *op, int client_id, struct main_d
     {
         if (results->status == 'D')
         {
+            markTime(&(op->client_end_time));
             memcpy(results, op, sizeof(struct operation));
             (*counter)++;
             break;
@@ -85,8 +92,6 @@ void client_process_operation(struct operation *op, int client_id, struct main_d
     }
 
     semaphore_mutex_unlock(sems->results_mutex);
-
-    markTime(op->client_end_time); //////////////////////
 
     fflush(stdout);
 }

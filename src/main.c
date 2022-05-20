@@ -8,6 +8,8 @@
 #include "../include/main-private.h"
 #include "../include/synchronization.h"
 #include "../include/metime.h"
+#include "../include/configuration.h"
+#include "../include/log.h"
 
 #include <ctype.h>
 #include <stdio.h>
@@ -16,6 +18,8 @@
 #include <unistd.h>
 #include <sys/stat.h>
 
+
+struct args *args;
 // Função que verifica se uma string é composta apenas por digitos
 int isNumber(char *str)
 {
@@ -38,60 +42,26 @@ int isNumber(char *str)
 void main_args(int argc, char *argv[], struct main_data *data)
 {
 
-    int valid = 1;
-
-    FILE *file;
-    int args[5];
-
-    struct stat buff;
-    int exist = stat(argv[1], &buff);
-    if (exist == -1) {
-        perror("file_error");
-        valid = 0;
-        exit(1);
-    }
-    file = fopen(argv[1], "r");
-    int n = 100;
-    char str[n];
-    fgets(str, n, file);
-    char* token = strtok(str, " ");
-    
-    int i = 0;
-    while (token != NULL && i < 5)
-    {
-        if (!isNumber(token))
-        {
-            printf("Parametros incorretos!\nExistem parametros incorretos no ficheiro !\n");
-            valid = 0;
-            break;
-        }
-
-        args[i] = atoi(token);
-        token = strtok(NULL, " ");
-        i++;
-    }
-    
     if (argc != 2)
     {
         printf("Uso: magnaeats max_ops buffers_size n_restaurants n_drivers n_clients\n");
         printf("Exemplo: ./bin/magnaeats config.txt\n");
-        valid = 0;
-    }
-
-    if (!valid)
-    {
-        fclose(file);
         destroy_dynamic_memory(data);
         exit(1);
     }
 
-    data->max_ops = args[0];
-    data->buffers_size = args[1];
-    data->n_clients = args[2];
-    data->n_restaurants = args[3];
-    data->n_drivers = args[4];
-    
-    fclose(file);
+    args = create_dynamic_memory(sizeof(struct args));
+    if (readFile(argv[1], args) == -1) {
+        perror("file_read_error");
+        destroy_dynamic_memory(data);
+        exit(1);
+    }
+     
+    data->max_ops = args->max_ops;
+    data->buffers_size = args->buffers_size;
+    data->n_clients = args->n_clients;
+    data->n_restaurants = args->n_restaurants;
+    data->n_drivers = args->n_drivers;
 }
 
 /* Função que reserva a memória dinâmica necessária para a execução
@@ -109,6 +79,7 @@ void create_dynamic_memory_buffers(struct main_data *data)
 }
 
 /* Função que reserva a memória partilhada necessária para a execução do
+ * MAGNAEATS. É necessário reservar memória partilhada para todos os buffers da
  * MAGNAEATS. É necessário reservar memória partilhada para todos os buffers da
  * estrutura communication_buffers, incluindo os buffers em si e respetivos
  * pointers, assim como para o array data->results e variável data->terminate.
@@ -178,8 +149,26 @@ void user_interaction(struct communication_buffers* buffers, struct main_data* d
     printHelp();
     while (1)
     {
+        //printf("trancar main\n");
+        
+        //semaphore_mutex_lock(sems->results_mutex);
+       
         printf("Introduzir acao:\n");
         scanf("%7s", line);
+        size_t size = 100;
+        char *buffer;
+        buffer = create_dynamic_memory(size * sizeof(char));
+        getline(&buffer, &size, stdin);
+        appendInstruction(args->statistics_filename, buffer);
+        
+        for (int i = strlen(buffer) - 1; i >= 0; i--) {
+            ungetc(buffer[i], stdin);
+        }
+        
+
+        // semaphore_mutex_unlock(sems->results_mutex);
+
+        //printf("destrancar main\n");
 
         if (strcmp(line, "request") == 0)
         {
@@ -248,7 +237,7 @@ void create_request(int *op_counter, struct communication_buffers *buffers, stru
 
     op->id = *op_counter;
     op->status = 'I';
-    markTime(op->start_time); ///////////////////////////////////////////
+    markTime(&(op->start_time));
     strcpy(op->requested_dish, dish);
 
     if (!isNumber(client))
@@ -278,8 +267,8 @@ void create_request(int *op_counter, struct communication_buffers *buffers, stru
 
     produce_begin(sems->main_rest);
     write_main_rest_buffer(buffers->main_rest, data->buffers_size, op);
-    produce_end(sems->main_rest);
     printf("O pedido #%d foi criado.\n", *op_counter);
+    produce_end(sems->main_rest);
 
     (*op_counter)++;
 
@@ -377,6 +366,8 @@ void create_semaphores(struct main_data *data, struct semaphores *sems)
     sems->driv_cli->full = semaphore_create(STR_SEM_DRIV_CLI_FULL, 0);
     sems->driv_cli->empty = semaphore_create(STR_SEM_DRIV_CLI_EMPTY, data->buffers_size);
     sems->driv_cli->mutex = semaphore_create(STR_SEM_DRIV_CLI_MUTEX, 1);
+
+    sems->results_mutex = semaphore_create(STR_SEM_RESULTS_MUTEX, 1);
 }
 
 /* Função que acorda todos os processos adormecidos em semáforos, para que
@@ -386,6 +377,12 @@ void create_semaphores(struct main_data *data, struct semaphores *sems)
  * máximo de processos que possam lá estar.*/
 void wakeup_processes(struct main_data *data, struct semaphores *sems)
 {
+    int i;
+    for (i = 0; i < data->max_ops; i++) {
+        produce_end(sems->main_rest);
+        produce_end(sems->driv_cli);
+        produce_end(sems->rest_driv);
+    }
     
 }
 
@@ -403,6 +400,8 @@ void destroy_semaphores(struct semaphores *sems)
     semaphore_destroy(STR_SEM_DRIV_CLI_FULL, sems->driv_cli->full);
     semaphore_destroy(STR_SEM_DRIV_CLI_EMPTY, sems->driv_cli->empty);
     semaphore_destroy(STR_SEM_DRIV_CLI_MUTEX, sems->driv_cli->mutex);
+
+    semaphore_destroy(STR_SEM_RESULTS_MUTEX, sems->results_mutex);
 }
 
 /* Função que termina a execução do programa MAGNAEATS. Deve começar por
@@ -416,6 +415,7 @@ void destroy_semaphores(struct semaphores *sems)
 void stop_execution(struct main_data *data, struct communication_buffers *buffers, struct semaphores *sems)
 {
     *data->terminate = 1;
+    wakeup_processes(data, sems);
     wait_processes(data);
     write_statistics(data);
     destroy_memory_buffers(data, buffers);

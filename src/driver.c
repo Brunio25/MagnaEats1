@@ -7,6 +7,7 @@
 #include "../include/main.h"
 #include "../include/memory.h"
 #include "../include/synchronization.h"
+#include "../include/metime.h"
 
 #include <stdio.h>
 #include <string.h>
@@ -53,11 +54,11 @@ int execute_driver(int driver_id, struct communication_buffers *buffers, struct 
  */
 void driver_receive_operation(struct operation *op, struct communication_buffers *buffers, struct main_data *data, struct semaphores *sems)
 {
-    if (*data->terminate == 1)
+    if (*data->terminate != 1)
     {
         consume_begin(sems->rest_driv);
-        markTime(op->driver_time); //////////////////////
         read_rest_driver_buffer(buffers->rest_driv, sizeof(buffers->rest_driv), op);
+        markTime(&(op->driver_time));
         consume_end(sems->rest_driv);
     }
     return;

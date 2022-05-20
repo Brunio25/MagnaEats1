@@ -142,7 +142,6 @@ void read_rest_driver_buffer(struct circular_buffer *buffer, int buffer_size, st
     int out = buffer->ptrs->out;
 
     memcpy(op, &(buffer->buffer[out]), sizeof(struct operation));
-    memset(&(buffer->buffer[out]), -1, sizeof(struct operation)); //talvez desnecessario
     buffer->ptrs->out = (out + 1) % buffer_size;
 }
 

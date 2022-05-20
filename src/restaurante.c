@@ -7,6 +7,7 @@
 #include "../include/memory.h"
 #include "../include/restaurant.h"
 #include "../include/synchronization.h"
+#include "../include/metime.h"
 
 #include <stdio.h>
 #include <string.h>
@@ -26,8 +27,9 @@ int execute_restaurant(int rest_id, struct communication_buffers *buffers, struc
     {
         struct operation *op;
         op = create_dynamic_memory(sizeof(struct operation));
-
+    
         restaurant_receive_operation(op, rest_id, buffers, data, sems);
+        
         if (*data->terminate == 0)
         {
             if (op->id != -1 && op->status == 'I')
@@ -57,9 +59,14 @@ void restaurant_receive_operation(struct operation *op, int rest_id, struct comm
     if (*data->terminate != 1)
     {
         consume_begin(sems->main_rest);
-        markTime(op->rest_time); //////////////////////
         read_main_rest_buffer(buffers->main_rest, rest_id, sizeof(buffers->main_rest), op);
+        markTime(&(op->rest_time));
         consume_end(sems->main_rest);
+
+        if (op->id == -1) {
+            semaphore_mutex_unlock(sems->main_rest->full);
+            semaphore_mutex_lock(sems->main_rest->empty);
+        }
     }
     return;
 }
@@ -70,12 +77,11 @@ void restaurant_receive_operation(struct operation *op, int rest_id, struct comm
  */
 void restaurant_process_operation(struct operation *op, int rest_id, struct main_data *data, int *counter, struct semaphores *sems)
 {
-    printf("Restaurante recebeu pedido!\n");
     op->receiving_rest = rest_id;
     op->status = 'R';
 
-    semaphore_mutex_lock(sems->results_mutex);
-
+    printf("Restaurante recebeu pedido!\n");
+    fflush(stdout);
     struct operation *results = data->results;
     while (results < data->results + sizeof(results))
     {
@@ -87,9 +93,9 @@ void restaurant_process_operation(struct operation *op, int rest_id, struct main
         }
         results++;
     }
-    semaphore_mutex_unlock(sems->results_mutex);
+    
 
-    fflush(stdout);
+   fflush(stdout);
 }
 
 /* Função que escreve uma operação no buffer de memória partilhada entre

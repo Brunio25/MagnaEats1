@@ -1,3 +1,6 @@
+#ifndef METIME_H_GUARD
+#define METIME_H_GUARD
+
 #include <stdio.h>
 #include <time.h>
 
@@ -6,6 +9,7 @@
 
 double dif;
 
-int markTime();
+void markTime(struct timespec* timeS);
 
+#endif
 

@@ -1,12 +1,14 @@
-OBJETOS = main.o memory.o client.o driver.o restaurante.o process.o synchronization.o metime.o
-main.o = main.h process.h main-private.h synchronization.h
+OBJETOS = main.o memory.o client.o driver.o restaurante.o process.o synchronization.o configuration.o metime.o log.o
+main.o = main.h process.h main-private.h synchronization.h configuration.h metime.h log.h
 memory.o = memory.h main.h
 client.o = memory.h main.h client.h
 driver.o = driver.h main.h memory.h
 restaurante.o = main.h memory.h restaurante.h
 process.o = client.h driver.h main.h memory.h restaurante.h process.h
-synchronization.o = synchronization.h synchronization.c
+synchronization.o = synchronization.h
 metime.o = client.h driver.h restaurante.h main.h memory.h
+configuration.o = configuration.h main-private.h
+log.o = log.h
 
 
 
@@ -14,7 +16,7 @@ OBJ_dir = obj
 CFLAGS = -Wall -g
 CC = gcc
 SRC_dir = src
-LIBS = -lrt -lpthread -lm
+LIBS = -lrt -lpthread
 
 
 magnaeats: $(OBJETOS)
