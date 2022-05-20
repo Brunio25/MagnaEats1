@@ -7,8 +7,6 @@
 #include "main.h"
 #include "memory.h"
 
-double dif;
-
 void markTime(struct timespec* timeS);
 
 #endif

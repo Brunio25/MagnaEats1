@@ -28,22 +28,22 @@ int readFile(char* filename, struct args* dest) {
         int count = 0;
  
             for (int i = 0; token[i]; i++) {
-                if (token[i] != '\n'){
+                if (token[i] != '\n') {
                     token[count++] = token[i]; 
                 }
             }                           
             token[count] = '\0';
         /////
         if (i == 5)  {
-            memcpy(dest->log_filename,token, 100);
+            memcpy(dest->log_filename, token, 100);
         } else if (i == 6) {
-            memcpy(dest->statistics_filename,token,100); 
+            memcpy(dest->statistics_filename, token, 100);
         } else {
             if (!isNumber(token)) {
                 printf("Parametros incorretos!\nExistem parametros incorretos no ficheiro !\n");
                 return -1;
             }
-            if(i==7){
+            if (i==7){
                 args[5] = atoi(token);
                 break;
             }
@@ -51,7 +51,6 @@ int readFile(char* filename, struct args* dest) {
             args[i] = atoi(token);        
         } 
         i++; 
-        
     }
 
     dest->max_ops = args[0];
@@ -59,7 +58,6 @@ int readFile(char* filename, struct args* dest) {
     dest->n_restaurants = args[2];
     dest->n_drivers = args[3];
     dest->n_clients = args[4];
-    
     dest->alarm_time = args[5];
 
     fclose(file);

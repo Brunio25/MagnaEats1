@@ -11,7 +11,6 @@ struct args {
     char* statistics_filename;
     int alarm_time;
 };
-
 int readFile(char* filename, struct args* dest);
 
 

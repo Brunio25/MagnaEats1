@@ -10,6 +10,7 @@
 #include "../include/metime.h"
 #include "../include/configuration.h"
 #include "../include/log.h"
+#include "../include/mesignal.h"
 
 #include <ctype.h>
 #include <stdio.h>
@@ -17,9 +18,12 @@
 #include <string.h>
 #include <unistd.h>
 #include <sys/stat.h>
+#include <signal.h>
 
 
 struct args *args;
+int alarm_id;
+
 // Função que verifica se uma string é composta apenas por digitos
 int isNumber(char *str)
 {
@@ -126,6 +130,8 @@ void launch_processes(struct communication_buffers *buffers, struct main_data *d
     {
         data->client_pids[i] = launch_client(i, buffers, data, sems);
     }
+    
+    alarm_id = launch_alarme(data, args->alarm_time);
 }
 
 /* Função que imprime a informação sobre os comandos disponiveis
@@ -154,26 +160,26 @@ void user_interaction(struct communication_buffers* buffers, struct main_data* d
     
     while (1)
     {
-        //printf("trancar main\n");
-        
-        //semaphore_mutex_lock(sems->results_mutex);
-       
         printf("Introduzir acao:\n");
         size_t size = 100;
-        char *buffer;
-        buffer = create_dynamic_memory(size * sizeof(char));
-        getline(&buffer, &size, stdin);
+        char *buffer = create_dynamic_memory(size * sizeof(char));   ////se quiserem melhoar tao à vontade
+
+        scanf("%1s", line);
+        for (int i = strlen(line) - 1; i >= 0; i--) {
+            ungetc(line[i], stdin);
+        }
+
+        fgets(buffer, 100, stdin);
         appendInstruction(args->statistics_filename, buffer);
+
         for (int i = strlen(buffer) - 1; i >= 0; i--) {
             ungetc(buffer[i], stdin);
         }
 
+        destroy_dynamic_memory(buffer);
+
         scanf("%7s", line);
         
-        // semaphore_mutex_unlock(sems->results_mutex);
-
-        //printf("destrancar main\n");
-
         if (strcmp(line, "request") == 0)
         {
             create_request(&counter, buffers, data, sems);
@@ -312,7 +318,6 @@ void read_status(struct main_data *data, struct semaphores *sems)
     semaphore_mutex_lock(sems->results_mutex);
     while (results < data->results + sizeof(results))
     {
-
         if (results->id == id &&
             (results->status == 'I' || results->status == 'D' || results->status == 'C' || results->status == 'R'))
         {
@@ -421,6 +426,7 @@ void stop_execution(struct main_data *data, struct communication_buffers *buffer
     *data->terminate = 1;
     wakeup_processes(data, sems);
     wait_processes(data);
+    kill(alarm_id, 0);
     write_statistics(data);
     destroy_memory_buffers(data, buffers);
     destroy_semaphores(sems);
@@ -447,6 +453,7 @@ void wait_processes(struct main_data *data)
     {
         data->client_stats[i] = wait_process(data->client_pids[i]);
     }
+
 }
 
 /* Função que imprime as estatisticas finais do MAGNAEATS, nomeadamente quantas

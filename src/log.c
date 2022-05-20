@@ -1,10 +1,13 @@
 #include "../include/log.h"
+#include "../include/metime.h"
 
 #include <time.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <sys/stat.h>
 #include <string.h>
+#include <math.h>
+#include <time.h>
 
 void appendInstruction(char *filename, char *str) {
     FILE *file;
@@ -16,14 +19,40 @@ void appendInstruction(char *filename, char *str) {
     info = localtime(&rawtime);
 
     char buffer[26];
+
+    struct timespec *timeS = create_dynamic_memory(sizeof(struct timespec));
+
+    markTime(timeS);
+
+    char *sec = create_dynamic_memory(100);
+
+    long nSec = timeS->tv_nsec;
+    long digits[4];
+    int i;
+    for (i = 0; i < 4; i++) {
+        digits[i] = nSec;
+    }
+
+    while(nSec) {
+        for (i = 4; i >= 1; i--) {
+            digits[i] = digits[i - 1];
+        }
+        digits[0] = nSec;
+        nSec /= 10;
+    }
+
     strftime(buffer, 26, "%Y-%m-%d %H:%M:%S", info);
 
-    char* cat = strcat(buffer," ");
-    cat = strcat(cat, str);
+    char decimal[10];
+    sprintf(decimal, ".%lu", digits[2]);
 
+    strcat(buffer, strcat(decimal, " "));
+    strcat(buffer, str);
 
-    fputs(cat, file);
+    fputs(buffer, file);
 
+    destroy_dynamic_memory(timeS);
+    destroy_dynamic_memory(sec);
     fclose(file);
 }
  
