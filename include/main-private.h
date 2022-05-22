@@ -9,4 +9,6 @@ void printHelp();
 // Função que verifica se uma string é composta apenas por digitos
 int isNumber(char* str);
 
+void stop_execution_handler();
+
 #endif

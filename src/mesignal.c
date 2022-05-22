@@ -2,10 +2,11 @@
 #include <time.h>
 #include <unistd.h>
 #include <stdlib.h>
+#include <signal.h>
 
 #include "../include/main.h"
+#include "../include/main-private.h"
 #include "../include/mesignal.h"
-
 
 int alarmeLoop(struct main_data *data, int alarm_time) {
    while (1)
@@ -43,3 +44,20 @@ int launch_alarme(struct main_data* data, int alarm_time) {
         return pid;
     }
 }
+
+int stop_signal() {
+    //sigaction(int signum, const struct sigaction *act, struct sigaction *oldact);
+    struct sigaction sa;
+    sa.sa_handler = stop_execution_handler;
+    sa.sa_flags = 0;
+    sigemptyset(&sa.sa_mask);
+
+    if(sigaction(SIGINT, &sa, NULL) == -1){
+        perror("--");
+        return -1;
+    }
+
+    return 0;
+}
+
+

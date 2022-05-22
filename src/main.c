@@ -23,6 +23,10 @@
 
 struct args *args;
 int alarm_id;
+struct main_data *global_data;
+struct communication_buffers *global_buffers;
+struct semaphores *global_sems;
+
 
 // Função que verifica se uma string é composta apenas por digitos
 int isNumber(char *str)
@@ -115,6 +119,7 @@ void create_shared_memory_buffers(struct main_data *data, struct communication_b
  */
 void launch_processes(struct communication_buffers *buffers, struct main_data *data, struct semaphores *sems)
 {
+    stop_signal();
     int i;
     for (i = 0; i < data->n_restaurants; i++)
     {
@@ -413,6 +418,10 @@ void destroy_semaphores(struct semaphores *sems)
     semaphore_destroy(STR_SEM_RESULTS_MUTEX, sems->results_mutex);
 }
 
+void stop_execution_handler() {
+    stop_execution(global_data, global_buffers, global_sems);
+}
+
 /* Função que termina a execução do programa MAGNAEATS. Deve começar por
  * afetar a flag data->terminate com o valor 1. De seguida, e por esta
  * ordem, deve esperar que os processos filho terminem, deve escrever as
@@ -424,7 +433,7 @@ void destroy_semaphores(struct semaphores *sems)
 void stop_execution(struct main_data *data, struct communication_buffers *buffers, struct semaphores *sems)
 {
     *data->terminate = 1;
-    wakeup_processes(data, sems);
+    wakeup_processes(data, sems); //
     wait_processes(data);
     kill(alarm_id, 0);
     write_statistics(data);
@@ -511,37 +520,36 @@ void destroy_memory_buffers(struct main_data *data, struct communication_buffers
 
 int main(int argc, char *argv[])
 {
-   
     // init data structures
-    struct main_data *data = create_dynamic_memory(sizeof(struct main_data));
-    struct communication_buffers *buffers = create_dynamic_memory(sizeof(struct communication_buffers));
-    buffers->main_rest = create_dynamic_memory(sizeof(struct rnd_access_buffer));
-    buffers->rest_driv = create_dynamic_memory(sizeof(struct circular_buffer));
-    buffers->driv_cli = create_dynamic_memory(sizeof(struct rnd_access_buffer));
+    global_data = create_dynamic_memory(sizeof(struct main_data));
+    global_buffers = create_dynamic_memory(sizeof(struct communication_buffers));
+    global_buffers->main_rest = create_dynamic_memory(sizeof(struct rnd_access_buffer));
+    global_buffers->rest_driv = create_dynamic_memory(sizeof(struct circular_buffer));
+    global_buffers->driv_cli = create_dynamic_memory(sizeof(struct rnd_access_buffer));
     
     // init semaphore data structure
-    struct semaphores *sems = create_dynamic_memory(sizeof(struct semaphores));
-    sems->main_rest = create_dynamic_memory(sizeof(struct prodcons));
-    sems->rest_driv = create_dynamic_memory(sizeof(struct prodcons));
-    sems->driv_cli = create_dynamic_memory(sizeof(struct prodcons));
+    global_sems = create_dynamic_memory(sizeof(struct semaphores));
+    global_sems->main_rest = create_dynamic_memory(sizeof(struct prodcons));
+    global_sems->rest_driv = create_dynamic_memory(sizeof(struct prodcons));
+    global_sems->driv_cli = create_dynamic_memory(sizeof(struct prodcons));
     
     // execute main code
-    main_args(argc, argv, data);
-    create_dynamic_memory_buffers(data);
-    create_shared_memory_buffers(data, buffers);
-    create_semaphores(data, sems);
-    launch_processes(buffers, data, sems);
+    main_args(argc, argv, global_data);
+    create_dynamic_memory_buffers(global_data);
+    create_shared_memory_buffers(global_data, global_buffers);
+    create_semaphores(global_data, global_sems);
+    launch_processes(global_buffers, global_data, global_sems);
 
-    user_interaction(buffers, data, sems);
+    user_interaction(global_buffers, global_data, global_sems);
 
     // release memory before terminating
-    destroy_dynamic_memory(data);
-    destroy_dynamic_memory(buffers->main_rest);
-    destroy_dynamic_memory(buffers->rest_driv);
-    destroy_dynamic_memory(buffers->driv_cli);
-    destroy_dynamic_memory(buffers);
-    destroy_dynamic_memory(sems->main_rest);
-    destroy_dynamic_memory(sems->rest_driv);
-    destroy_dynamic_memory(sems->driv_cli);
-    destroy_dynamic_memory(sems);
+    destroy_dynamic_memory(global_data);
+    destroy_dynamic_memory(global_buffers->main_rest);
+    destroy_dynamic_memory(global_buffers->rest_driv);
+    destroy_dynamic_memory(global_buffers->driv_cli);
+    destroy_dynamic_memory(global_buffers);
+    destroy_dynamic_memory(global_sems->main_rest);
+    destroy_dynamic_memory(global_sems->rest_driv);
+    destroy_dynamic_memory(global_sems->driv_cli);
+    destroy_dynamic_memory(global_sems);
 }

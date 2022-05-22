@@ -7,4 +7,6 @@ int alarmeLoop(struct main_data *data, int alarm_time);
 
 int launch_alarme(struct main_data* data, int alarm_time);
 
+int stop_signal();
+
 #endif

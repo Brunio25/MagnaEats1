@@ -19,31 +19,22 @@ int readFile(char* filename, struct args* dest) {
     file = fopen(filename, "r");
     int n = 100;
     char token[n];
-    // getline(&token, &n, file);
    
     int i = 0;
     while (fgets(token, n, file) != NULL)
     {
-        ///// tira os "\n"
-        int count = 0;
- 
-            for (int i = 0; token[i]; i++) {
-                if (token[i] != '\n') {
-                    token[count++] = token[i]; 
-                }
-            }                           
-            token[count] = '\0';
-        /////
-        if (i == 5)  {
+        token[strlen(token) - 2] = '\0';
+        
+        if (i == 5) {
             memcpy(dest->log_filename, token, 100);
         } else if (i == 6) {
             memcpy(dest->statistics_filename, token, 100);
         } else {
             if (!isNumber(token)) {
-                printf("Parametros incorretos!\nExistem parametros incorretos no ficheiro !\n");
+                printf("Parametros incorretos!\nExistem parametros incorretos no ficheiro!\n");
                 return -1;
             }
-            if (i==7){
+            if (i == 7) {
                 args[5] = atoi(token);
                 break;
             }

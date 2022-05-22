@@ -18,7 +18,7 @@ void appendInstruction(char *filename, char *str) {
     time(&rawtime);
     info = localtime(&rawtime);
 
-    char buffer[26];
+    char buffer[100];
 
     struct timespec *timeS = create_dynamic_memory(sizeof(struct timespec));
 

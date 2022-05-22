@@ -25,7 +25,7 @@
 int launch_restaurant(int restaurant_id, struct communication_buffers* buffers, struct main_data* data, struct semaphores *sems) {
     fflush(stdout);
     int pid = fork();
-
+    
     if (pid == -1) {
         exit(1);
     } else if (pid == 0) {
