@@ -1,11 +1,22 @@
 #include "../include/metime.h"
+#include "../include/log.h"
 
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
 
-// The clock_gettime() function gets the current time of the clock specified by clock_id, 
-// and puts it into the buffer pointed to by tp. The only supported clock ID is CLOCK_REALTIME. 
+// converte um timespec para uma string e coloca-a num buffer com um formato especico,
+// precedendo-a com str.
+void tSpecToTm(char *buffer, time_t *timespec, char *str) {
+    struct tm *time;
+    char timeBuff[26];
+    time = localtime(timespec);
+    strftime(timeBuff, 26, "%Y-%m-%d %H:%M:%S", time);
+    snprintf(buffer, 50,"%s: %s.%ld\n", str, timeBuff, firstThree(*timespec));
+}
+
+// A funcao clock_gettime() retorna o tempo atual pelo relogio especificado por clock_id,
+// e coloca-o no buffer apontado por tp. A unica clock ID suportada e CLOCK_REALTIME.
 void markTime(struct timespec *timeS)
 {
     if (clock_gettime(CLOCK_REALTIME, timeS) == -1)

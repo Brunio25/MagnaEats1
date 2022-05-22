@@ -11,6 +11,8 @@
 #include "../include/configuration.h"
 #include "../include/log.h"
 #include "../include/mesignal.h"
+#include "../include/stats.h"
+
 
 #include <ctype.h>
 #include <stdio.h>
@@ -19,6 +21,7 @@
 #include <unistd.h>
 #include <sys/stat.h>
 #include <signal.h>
+#include <errno.h>
 
 int alarm_id;
 struct args *args;
@@ -51,7 +54,7 @@ void main_args(int argc, char *argv[], struct main_data *data)
 
     if (argc != 2)
     {
-        printf("Uso: magnaeats max_ops buffers_size n_restaurants n_drivers n_clients\n");
+        printf("Uso: config.txt max_ops buffers_size n_restaurants n_drivers n_clients log_filename statistics_filename alarme_time\n");
         printf("Exemplo: ./bin/magnaeats config.txt\n");
         destroy_dynamic_memory(data);
         exit(1);
@@ -166,29 +169,30 @@ void user_interaction(struct communication_buffers* buffers, struct main_data* d
     {
         printf("Introduzir acao:\n");
         size_t size = 100;
-        char *buffer = create_dynamic_memory(size * sizeof(char));   ////se quiserem melhorar tao à vontade
+        char *buffer = create_dynamic_memory(size * sizeof(char));   
 
         scanf("%1s", line);
+
         for (int i = strlen(line) - 1; i >= 0; i--) {
             ungetc(line[i], stdin);
         }
 
-        /////////////////////////////////////////////////////////////
         fgets(buffer, 100, stdin);
-        appendInstruction(args->statistics_filename, buffer);
+        appendInstruction(args->log_filename, buffer);
 
         for (int i = strlen(buffer) - 1; i >= 0; i--) {
             ungetc(buffer[i], stdin);
-        }                                                           //Nao faz sentido dar get unget e depois get
+        }                                                          
 
         destroy_dynamic_memory(buffer);
 
         scanf("%7s", line);
-        /////////////////////////////////////////////////////////////
+       
         
         if (strcmp(line, "request") == 0)
         {
             create_request(&counter, buffers, data, sems);
+            sleep(1);
         }
         else if (strcmp(line, "status") == 0)
         {
@@ -421,6 +425,7 @@ void destroy_semaphores(struct semaphores *sems)
 
 void stop_execution_handler(int sig, siginfo_t *info, void *ucontext) {
     stop_execution(global_data, global_buffers, global_sems);
+    exit(0);
 }
 
 /* Função que termina a execução do programa MAGNAEATS. Deve começar por
@@ -431,10 +436,9 @@ void stop_execution_handler(int sig, siginfo_t *info, void *ucontext) {
  * as zonas de memória partilhada e dinâmica previamente
  * reservadas. Para tal, pode usar as outras funções auxiliares do main.h.
  */
-void stop_execution(struct main_data *data, struct communication_buffers *buffers, struct semaphores *sems)
-{
+void stop_execution(struct main_data *data, struct communication_buffers *buffers, struct semaphores *sems){
     *data->terminate = 1;
-    wakeup_processes(data, sems); //
+    wakeup_processes(data, sems);
     wait_processes(data);
     write_statistics(data);
     destroy_memory_buffers(data, buffers);
@@ -470,22 +474,8 @@ void wait_processes(struct main_data *data)
  */
 void write_statistics(struct main_data *data)
 {
-    printf("Terminando o MAGNAEATS! Imprimindo estatisticas:\n");
-    for (int i = 0; i < data->n_restaurants; i++)
-    {
-        printf("Restaurante %d preparou %d pedidos!\n", i, data->restaurant_stats[i]);
-    }
-
-    for (int i = 0; i < data->n_drivers; i++)
-    {
-        printf("Motorista %d entregou %d pedidos!\n", i, data->driver_stats[i]);
-    }
-
-    for (int i = 0; i < data->n_clients; i++)
-    {
-        printf("Cliente %d recebeu %d pedidos!\n", i, data->client_stats[i]);
-    }
-    fflush(stdout);
+    writeFile(args->statistics_filename, data);
+    printf("Terminando o MAGNAEATS!\n");
 }
 
 /* Função que liberta todos os buffers de memória dinâmica e partilhada previamente
@@ -541,7 +531,7 @@ int main(int argc, char *argv[])
     launch_processes(global_buffers, global_data, global_sems);
 
     user_interaction(global_buffers, global_data, global_sems);
-
+    
     // release memory before terminating
     destroy_dynamic_memory(global_data);
     destroy_dynamic_memory(global_buffers->main_rest);

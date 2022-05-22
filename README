@@ -1,4 +1,4 @@
-Uso: magnaeats max_ops buffers_size n_restaurants n_drivers n_clients
+Uso: config.txt max_ops buffers_size n_restaurants n_drivers n_clients log_filename statistics_filename alarme_time
 Exemplo: ./bin/magnaeats 10 10 1 1 1
 
 authors:

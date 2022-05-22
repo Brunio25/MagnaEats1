@@ -9,12 +9,14 @@
 #include "../include/main.h"
 #include "../include/memory.h"
 #include "../include/restaurant.h"
+#include "../include/mesignal.h"
 
 #include <stdio.h>
 #include <stdlib.h>
 #include <sys/types.h>
 #include <sys/wait.h>
 #include <unistd.h>
+
 
 
 
@@ -30,7 +32,7 @@ int launch_restaurant(int restaurant_id, struct communication_buffers* buffers, 
         exit(1);
     } else if (pid == 0) {
         exit(execute_restaurant(restaurant_id, buffers, data, sems));
-    } else {
+    } else {        
         return pid;
     }
 }

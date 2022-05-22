@@ -1,62 +1,57 @@
-2022-05-22 01:58:40.361 GÑ²üstop
-2022-05-22 01:58:40.363 top
-2022-05-22 01:59:01.725 stop
-2022-05-22 02:14:12.201 request 1 1 1
-2022-05-22 02:14:32.701 request 1 1 1
-2022-05-22 02:14:36.905 reuest 1 1 1
-2022-05-22 02:14:36.907 1 1 1
-2022-05-22 02:14:36.908 1 1
-2022-05-22 02:14:36.910 1
-2022-05-22 02:14:46.444 request 1 1 1
-2022-05-22 02:15:05.973 request 1 1 1
-2022-05-22 02:15:16.826 request 2 2 2
-2022-05-22 02:15:20.694 stop
-2022-05-22 02:15:57.807 request 1 1 1
-2022-05-22 02:15:59.961 stop
-2022-05-22 02:16:09.388 request 1 1 1
-2022-05-22 02:16:14.776 request 1 1 1
-2022-05-22 02:16:18.699 stop
-2022-05-22 02:16:40.355 stop
-2022-05-22 05:00:55.515 request 1 1 joanaalbuquerque
-2022-05-22 05:01:01.884 status 0
-2022-05-22 05:01:12.537 stop
-2022-05-22 05:02:43.261 request 1 1 1
-2022-05-22 05:02:54.123 requeststop
-2022-05-22 05:04:31.722 request 1 1 1
-2022-05-22 05:10:22.232 requeststop
-2022-05-22 05:10:41.916 request 1 1 joana
-2022-05-22 05:21:10.803 requeststop
-2022-05-22 05:21:38.278 stop
-2022-05-22 05:23:45.364 request 1 1 1
-2022-05-22 05:35:13.324 request 1 1 1
-2022-05-22 05:44:22.154 request 1 1 1
-2022-05-22 05:46:03.553 request 1 1 1
-2022-05-22 05:46:18.469 request 1 1 1
-2022-05-22 05:46:31.168 request
-2022-05-22 05:48:52.867 request 1 1 1
-2022-05-22 05:49:06.156 requests
-2022-05-22 05:51:12.100 request 1 1 1
-2022-05-22 05:51:14.976 requests
-2022-05-22 07:54:05.318 request 1 1 joana
-2022-05-22 07:54:09.881 status 0
-2022-05-22 07:54:29.215 request 1 1 1
-2022-05-22 07:54:30.744 stop
-2022-05-22 07:59:31.404 request 1 1 1
-2022-05-22 08:00:09.853 request 1 1 1
-2022-05-22 08:00:10.755 stop
-2022-05-22 08:00:19.948 request 1 1 1
-2022-05-22 08:03:38.910 request 1 1 1
-2022-05-22 08:04:19.516 request 1 1 1
-2022-05-22 08:04:21.225 stop
-2022-05-22 08:04:39.876 request 1 1 1
-2022-05-22 08:20:16.876 request 1 1 1
-2022-05-22 08:20:29.479 request 1 1 1
-2022-05-22 08:20:41.989 request 1 1 1
-2022-05-22 08:20:43.299 stop
-2022-05-22 08:20:48.129 request 1 1 1
-2022-05-22 08:35:21.924 request 1 1 1
-2022-05-22 08:39:04.945 request 1 1 1
-2022-05-22 08:39:06.538 stop
-2022-05-22 08:39:14.630 request 1 1 1
-2022-05-22 08:39:37.361 request 1 1 1
-2022-05-22 08:40:21.617 request 1 1 1
+Process Statistics:
+		Restaurant 0 prepared 0 requests!
+		Restaurant 1 prepared 1 requests!
+		Driver 0 delivered 1 requests!
+		Driver 1 delivered 0 requests!
+		Client 0 received 0 requests!
+		Client 1 received 1 requests!
+
+Request Statistics:
+Request: 0
+Status: C
+Restaurant id: 1
+Driver id: 1
+Client id: 0
+Created: 1979-06-23 10:32:08.298
+Restaurant time: 1979-06-26 15:31:58.299
+Driver time: 1979-06-28 00:34:16.299
+Client time (end): 1979-06-29 23:54:13.299
+Total Time: 0.000567
+Process Statistics:
+		Restaurant 0 prepared 0 requests!
+		Restaurant 1 prepared 1 requests!
+		Driver 0 delivered 1 requests!
+		Driver 1 delivered 0 requests!
+		Client 0 received 0 requests!
+		Client 1 received 1 requests!
+
+Request Statistics:
+Request: 0
+Status: C
+Restaurant id: 1
+Driver id: 1
+Client id: 0
+Created: 1983-09-23 09:10:13.433
+Restaurant time: 1983-09-25 19:22:35.433
+Driver time: 1983-09-27 11:28:16.433
+Client time (end): 1983-09-29 21:36:59.433
+Total Time: 0.000567
+Process Statistics:
+		Restaurant 0 prepared 0 requests!
+		Restaurant 1 prepared 1 requests!
+		Driver 0 delivered 1 requests!
+		Driver 1 delivered 0 requests!
+		Client 0 received 0 requests!
+		Client 1 received 1 requests!
+
+Request Statistics:
+Request: 0
+Status: C
+Restaurant id: 1
+Driver id: 1
+Client id: 0
+Created: 1999-03-07 12:27:43.920
+Restaurant time: 1999-03-09 22:14:26.921
+Driver time: 1999-03-11 08:03:43.921
+Client time (end): 1999-03-13 14:57:10.921
+Total Time: 0.000527

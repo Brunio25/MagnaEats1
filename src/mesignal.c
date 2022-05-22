@@ -39,6 +39,7 @@ int launch_alarme(struct main_data* data, int alarm_time) {
     if (pid == -1) {
         exit(1);
     } else if (pid == 0) {
+        block_signal();
         exit(alarmeLoop(data, alarm_time));
     } else {
         return pid;
@@ -46,9 +47,10 @@ int launch_alarme(struct main_data* data, int alarm_time) {
 }
 
 int stop_signal() {
-    //sigaction(int signum, const struct sigaction *act, struct sigaction *oldact);
     struct sigaction sa;
+    sigset_t block_mask;
     sigemptyset(&sa.sa_mask);
+    sigemptyset (&block_mask);
     sigaddset(&sa.sa_mask, SIGINT);
     sa.sa_flags = SA_SIGINFO;
     sa.sa_sigaction = stop_execution_handler;
@@ -58,6 +60,11 @@ int stop_signal() {
         return -1;
     }
 
+    return 0;
+}
+
+int block_signal(){
+    signal(SIGINT,  SIG_IGN);
     return 0;
 }
 

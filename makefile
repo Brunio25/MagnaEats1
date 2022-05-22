@@ -1,5 +1,5 @@
-OBJETOS = main.o memory.o client.o driver.o restaurante.o process.o synchronization.o configuration.o metime.o log.o mesignal.o
-main.o = main.h process.h main-private.h synchronization.h configuration.h metime.h log.h mesignal.h
+OBJETOS = main.o memory.o client.o driver.o restaurante.o process.o synchronization.o configuration.o metime.o log.o mesignal.o stats.o
+main.o = main.h process.h main-private.h synchronization.h configuration.h metime.h log.h mesignal.h stats.h
 memory.o = memory.h main.h
 client.o = memory.h main.h client.h 
 driver.o = driver.h main.h memory.h
@@ -10,6 +10,7 @@ metime.o = client.h driver.h restaurante.h main.h memory.h
 configuration.o = configuration.h main-private.h
 log.o = log.h metime.h
 mesignal.o = mesignal.h main.h main-private.h
+stats.o = stats.h main.h
 
 
 
