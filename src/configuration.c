@@ -1,30 +1,30 @@
 #include "../include/configuration.h"
-#include "../include/main-private.h"
 
 #include <stdio.h>
 #include <stdlib.h>
-#include <sys/stat.h>
 #include <string.h>
+#include <sys/stat.h>
+
+#include "../include/main-private.h"
 
 int readFile(char* filename, struct args* dest) {
-    FILE *file;
+    FILE* file;
     int args[6];
-    
+
     struct stat buff;
     int exist = stat(filename, &buff);
     if (exist == -1) {
         return -1;
     }
-    
+
     file = fopen(filename, "r");
     int n = 100;
     char token[n];
-   
+
     int i = 0;
-    while (fgets(token, n, file) != NULL)
-    {
+    while (fgets(token, n, file) != NULL) {
         token[strlen(token) - 2] = '\0';
-        
+
         if (i == 5) {
             memcpy(dest->log_filename, token, 100);
         } else if (i == 6) {
@@ -39,9 +39,9 @@ int readFile(char* filename, struct args* dest) {
                 break;
             }
 
-            args[i] = atoi(token);        
-        } 
-        i++; 
+            args[i] = atoi(token);
+        }
+        i++;
     }
 
     dest->max_ops = args[0];
@@ -52,6 +52,6 @@ int readFile(char* filename, struct args* dest) {
     dest->alarm_time = args[5];
 
     fclose(file);
-    
+
     return 0;
 }

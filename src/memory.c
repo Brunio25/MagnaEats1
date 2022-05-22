@@ -4,7 +4,6 @@
 //     João Vedor      fc56311
 
 #include "../include/memory.h"
-#include "../include/main.h"
 
 #include <fcntl.h>
 #include <stdio.h>
@@ -14,6 +13,8 @@
 #include <sys/stat.h>
 #include <sys/wait.h>
 #include <unistd.h>
+
+#include "../include/main.h"
 
 /* Função que reserva uma zona de memória partilhada com tamanho indicado
  * por size e nome name, preenche essa zona de memória com o valor 0, e
@@ -44,7 +45,9 @@ void *create_shared_memory(char *name, int size) {
  * por size, preenche essa zona de memória com o valor 0, e retorna um
  * apontador para a mesma.
  */
-void *create_dynamic_memory(int size) { return calloc(size + 1, sizeof(int)); }
+void *create_dynamic_memory(int size) {
+    return calloc(size + 1, sizeof(int));
+}
 
 /* Função que liberta uma zona de memória dinâmica previamente reservada.
  */
@@ -87,7 +90,8 @@ void write_main_rest_buffer(struct rnd_access_buffer *buffer, int buffer_size, s
  * Se não houver nenhuma posição livre, não escreve nada.
  */
 void write_rest_driver_buffer(struct circular_buffer *buffer, int buffer_size, struct operation *op) {
-    while (((buffer->ptrs->in + 1) % buffer_size) == buffer->ptrs->out);
+    while (((buffer->ptrs->in + 1) % buffer_size) == buffer->ptrs->out)
+        ;
 
     memcpy(&(buffer->buffer[buffer->ptrs->in]), op, sizeof(struct operation));
     buffer->ptrs->in = (buffer->ptrs->in + 1) % buffer_size;

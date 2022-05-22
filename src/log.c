@@ -1,13 +1,13 @@
 #include "../include/log.h"
-#include "../include/metime.h"
 
-#include <time.h>
+#include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <sys/stat.h>
 #include <string.h>
-#include <math.h>
+#include <sys/stat.h>
 #include <time.h>
+
+#include "../include/metime.h"
 
 // Retorna um long com os primeiros três dígitos de um long
 long firstThree(long nSec) {
@@ -17,7 +17,7 @@ long firstThree(long nSec) {
         digits[i] = nSec;
     }
 
-    while(nSec) {
+    while (nSec) {
         for (i = 4; i >= 1; i--) {
             digits[i] = digits[i - 1];
         }
@@ -61,4 +61,3 @@ void appendInstruction(char *filename, char *str) {
     destroy_dynamic_memory(sec);
     fclose(file);
 }
- 

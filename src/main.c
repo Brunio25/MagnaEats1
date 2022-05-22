@@ -4,24 +4,24 @@
 //     João Vedor      fc56311
 
 #include "../include/main.h"
-#include "../include/process.h"
-#include "../include/main-private.h"
-#include "../include/synchronization.h"
-#include "../include/metime.h"
-#include "../include/configuration.h"
-#include "../include/log.h"
-#include "../include/mesignal.h"
-#include "../include/stats.h"
-
 
 #include <ctype.h>
+#include <errno.h>
+#include <signal.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <unistd.h>
 #include <sys/stat.h>
-#include <signal.h>
-#include <errno.h>
+#include <unistd.h>
+
+#include "../include/configuration.h"
+#include "../include/log.h"
+#include "../include/main-private.h"
+#include "../include/mesignal.h"
+#include "../include/metime.h"
+#include "../include/process.h"
+#include "../include/stats.h"
+#include "../include/synchronization.h"
 
 int alarm_id;
 struct args *args;
@@ -29,14 +29,10 @@ struct main_data *global_data;
 struct communication_buffers *global_buffers;
 struct semaphores *global_sems;
 
-
 // Função que verifica se uma string é composta apenas por digitos
-int isNumber(char *str)
-{
-    for (int i = 0; i < strlen(str); i++)
-    {
-        if (!isdigit(str[i]))
-        {
+int isNumber(char *str) {
+    for (int i = 0; i < strlen(str); i++) {
+        if (!isdigit(str[i])) {
             return 0;
         }
     }
@@ -49,12 +45,11 @@ int isNumber(char *str)
  * restaurantes. Guarda esta informação nos campos apropriados da
  * estrutura main_data.
  */
-void main_args(int argc, char *argv[], struct main_data *data)
-{
-
-    if (argc != 2)
-    {
-        printf("Uso: config.txt max_ops buffers_size n_restaurants n_drivers n_clients log_filename statistics_filename alarme_time\n");
+void main_args(int argc, char *argv[], struct main_data *data) {
+    if (argc != 2) {
+        printf(
+            "Uso: config.txt max_ops buffers_size n_restaurants n_drivers n_clients log_filename statistics_filename "
+            "alarme_time\n");
         printf("Exemplo: ./bin/magnaeats config.txt\n");
         destroy_dynamic_memory(data);
         exit(1);
@@ -69,21 +64,19 @@ void main_args(int argc, char *argv[], struct main_data *data)
         destroy_dynamic_memory(data);
         exit(1);
     }
-     
+
     data->max_ops = args->max_ops;
     data->buffers_size = args->buffers_size;
     data->n_clients = args->n_clients;
     data->n_restaurants = args->n_restaurants;
     data->n_drivers = args->n_drivers;
-
 }
 
 /* Função que reserva a memória dinâmica necessária para a execução
  * do MAGNAEATS, nomeadamente para os arrays *_pids e *_stats da estrutura
  * main_data. Para tal, pode ser usada a função create_dynamic_memory.
  */
-void create_dynamic_memory_buffers(struct main_data *data)
-{
+void create_dynamic_memory_buffers(struct main_data *data) {
     data->client_stats = create_dynamic_memory(data->n_clients * sizeof(int));
     data->driver_stats = create_dynamic_memory(data->n_drivers * sizeof(int));
     data->restaurant_stats = create_dynamic_memory(data->n_restaurants * sizeof(int));
@@ -99,15 +92,18 @@ void create_dynamic_memory_buffers(struct main_data *data)
  * pointers, assim como para o array data->results e variável data->terminate.
  * Para tal, pode ser usada a função create_shared_memory.
  */
-void create_shared_memory_buffers(struct main_data *data, struct communication_buffers *buffers)
-{
-    buffers->main_rest->buffer = create_shared_memory(STR_SHM_MAIN_REST_BUFFER, data->buffers_size * sizeof(struct operation));
+void create_shared_memory_buffers(struct main_data *data, struct communication_buffers *buffers) {
+    buffers->main_rest->buffer =
+        create_shared_memory(STR_SHM_MAIN_REST_BUFFER, data->buffers_size * sizeof(struct operation));
     buffers->main_rest->ptrs = create_shared_memory(STR_SHM_MAIN_REST_PTR, data->buffers_size * sizeof(int));
 
-    buffers->rest_driv->buffer = create_shared_memory(STR_SHM_REST_DRIVER_BUFFER, data->buffers_size * sizeof(struct operation));
-    buffers->rest_driv->ptrs = create_shared_memory(STR_SHM_REST_DRIVER_PTR, data->buffers_size * sizeof(struct pointers));
+    buffers->rest_driv->buffer =
+        create_shared_memory(STR_SHM_REST_DRIVER_BUFFER, data->buffers_size * sizeof(struct operation));
+    buffers->rest_driv->ptrs =
+        create_shared_memory(STR_SHM_REST_DRIVER_PTR, data->buffers_size * sizeof(struct pointers));
 
-    buffers->driv_cli->buffer = create_shared_memory(STR_SHM_DRIVER_CLIENT_BUFFER, data->buffers_size * sizeof(struct operation));
+    buffers->driv_cli->buffer =
+        create_shared_memory(STR_SHM_DRIVER_CLIENT_BUFFER, data->buffers_size * sizeof(struct operation));
     buffers->driv_cli->ptrs = create_shared_memory(STR_SHM_DRIVER_CLIENT_PTR, data->buffers_size * sizeof(int));
 
     data->results = create_shared_memory(STR_SHM_RESULTS, data->max_ops * sizeof(struct operation));
@@ -119,33 +115,28 @@ void create_shared_memory_buffers(struct main_data *data, struct communication_b
  * guardando os pids resultantes nos arrays respetivos
  * da estrutura data.
  */
-void launch_processes(struct communication_buffers *buffers, struct main_data *data, struct semaphores *sems)
-{
+void launch_processes(struct communication_buffers *buffers, struct main_data *data, struct semaphores *sems) {
     stop_signal();
     int i;
-    for (i = 0; i < data->n_restaurants; i++)
-    {
+    for (i = 0; i < data->n_restaurants; i++) {
         data->restaurant_pids[i] = launch_restaurant(i, buffers, data, sems);
     }
 
-    for (i = 0; i < data->n_drivers; i++)
-    {
+    for (i = 0; i < data->n_drivers; i++) {
         data->driver_pids[i] = launch_driver(i, buffers, data, sems);
     }
 
-    for (i = 0; i < data->n_clients; i++)
-    {
+    for (i = 0; i < data->n_clients; i++) {
         data->client_pids[i] = launch_client(i, buffers, data, sems);
     }
-    
+
     alarm_id = launch_alarme(data, args->alarm_time);
 }
 
 /* Função que imprime a informação sobre os comandos disponiveis
  * ao utilizador.
  */
-void printHelp()
-{
+void printHelp() {
     printf("Acoes disponiveis:\n\trequest client restaurant dish - criar um novo pedido\n");
     printf("\tstatus id - consultar o estado de um pedido \n");
     printf("\tstop - termina a execucao do magnaeats.\n");
@@ -159,17 +150,15 @@ void printHelp()
  * stop - termina o execução do MAGNAEATS através da função stop_execution
  * help - imprime informação sobre os comandos disponiveis
  */
-void user_interaction(struct communication_buffers* buffers, struct main_data* data, struct semaphores* sems)
-{
+void user_interaction(struct communication_buffers *buffers, struct main_data *data, struct semaphores *sems) {
     char line[8];
     int counter = 0;
     printHelp();
-    
-    while (1)
-    {
+
+    while (1) {
         printf("Introduzir acao:\n");
         size_t size = 100;
-        char *buffer = create_dynamic_memory(size * sizeof(char));   
+        char *buffer = create_dynamic_memory(size * sizeof(char));
 
         scanf("%1s", line);
 
@@ -182,33 +171,23 @@ void user_interaction(struct communication_buffers* buffers, struct main_data* d
 
         for (int i = strlen(buffer) - 1; i >= 0; i--) {
             ungetc(buffer[i], stdin);
-        }                                                          
+        }
 
         destroy_dynamic_memory(buffer);
 
         scanf("%7s", line);
-       
-        
-        if (strcmp(line, "request") == 0)
-        {
+
+        if (strcmp(line, "request") == 0) {
             create_request(&counter, buffers, data, sems);
             sleep(1);
-        }
-        else if (strcmp(line, "status") == 0)
-        {
+        } else if (strcmp(line, "status") == 0) {
             read_status(data, sems);
-        }
-        else if (strcmp(line, "stop") == 0)
-        {
+        } else if (strcmp(line, "stop") == 0) {
             stop_execution(data, buffers, sems);
             return;
-        }
-        else if (strcmp(line, "help") == 0)
-        {
+        } else if (strcmp(line, "help") == 0) {
             printHelp();
-        }
-        else
-        {
+        } else {
             printf("Acao nao reconhecida, insira 'help' para assistencia.\n");
         }
     }
@@ -219,10 +198,9 @@ void user_interaction(struct communication_buffers* buffers, struct main_data* d
  * argumento, escrevendo a mesma no buffer de memória partilhada entre main e restaurantes.
  * Imprime o id da operação e incrementa o contador de operações op_counter.
  */
-void create_request(int *op_counter, struct communication_buffers *buffers, struct main_data *data, struct semaphores *sems)
-{
-    if (*op_counter >= data->max_ops)
-    {
+void create_request(int *op_counter, struct communication_buffers *buffers, struct main_data *data,
+                    struct semaphores *sems) {
+    if (*op_counter >= data->max_ops) {
         printf("Numero maximo de operacoes atingido.\n");
         return;
     }
@@ -232,21 +210,15 @@ void create_request(int *op_counter, struct communication_buffers *buffers, stru
     char dish[MAX_REQUESTED_DISH_SIZE];
 
     scanf("%10s", client);
-    if (!isNumber(client))
-    {
+    if (!isNumber(client)) {
         strcpy(dish, client);
         strcpy(client, "-1");
-    }
-    else
-    {
+    } else {
         scanf("%10s", restaurant);
-        if (!isNumber(restaurant))
-        {
+        if (!isNumber(restaurant)) {
             strcpy(dish, restaurant);
             strcpy(restaurant, "-1");
-        }
-        else
-        {
+        } else {
             scanf("%99s", dish);
         }
     }
@@ -260,13 +232,10 @@ void create_request(int *op_counter, struct communication_buffers *buffers, stru
     markTime(&(op->start_time));
     strcpy(op->requested_dish, dish);
 
-    if (!isNumber(client))
-    {
+    if (!isNumber(client)) {
         op->requesting_client = -1;
         op->requested_rest = -1;
-    }
-    else
-    {
+    } else {
         op->requesting_client = atoi(client);
         op->requested_rest = atoi(restaurant);
     }
@@ -274,10 +243,8 @@ void create_request(int *op_counter, struct communication_buffers *buffers, stru
     struct operation *results = data->results;
 
     semaphore_mutex_lock(sems->results_mutex);
-    while (results < data->results + sizeof(data->results))
-    {
-        if (!(results->status == 'I' || results->status == 'R' || results->status == 'D' || results->status == 'C'))
-        {
+    while (results < data->results + sizeof(data->results)) {
+        if (!(results->status == 'I' || results->status == 'R' || results->status == 'D' || results->status == 'C')) {
             memcpy(results, op, sizeof(struct operation));
             break;
         }
@@ -301,22 +268,17 @@ void create_request(int *op_counter, struct communication_buffers *buffers, stru
  * que fez o pedido, o id do restaurante requisitado, o nome do prato pedido
  * e os ids do restaurante, motorista, e cliente que a receberam e processaram.
  */
-void read_status(struct main_data *data, struct semaphores *sems)
-{
+void read_status(struct main_data *data, struct semaphores *sems) {
     char c[11];
     int id;
 
     scanf("%s", c);
-    if (isNumber(c))
-    {
+    if (isNumber(c)) {
         id = atoi(c);
-    }
-    else
-    {
+    } else {
         printf("id de pedido fornecido e invalido!\n");
 
-        for (int i = strlen(c) - 1; i >= 0; i--)
-        {
+        for (int i = strlen(c) - 1; i >= 0; i--) {
             ungetc(c[i], stdin);
         }
 
@@ -326,32 +288,24 @@ void read_status(struct main_data *data, struct semaphores *sems)
     struct operation *results = data->results;
 
     semaphore_mutex_lock(sems->results_mutex);
-    while (results < data->results + sizeof(results))
-    {
+    while (results < data->results + sizeof(results)) {
         if (results->id == id &&
-            (results->status == 'I' || results->status == 'D' || results->status == 'C' || results->status == 'R'))
-        {
+            (results->status == 'I' || results->status == 'D' || results->status == 'C' || results->status == 'R')) {
             printf("Pedido %d com estado %c requisitado pelo cliente %d ao restaurante %d ", id, results->status,
                    results->requesting_client, results->requested_rest);
             printf("com o prato %s, ", results->requested_dish);
 
-            if (results->requested_rest != -1 && results->requesting_client != -1 && results->status != 'I')
-            {
+            if (results->requested_rest != -1 && results->requesting_client != -1 && results->status != 'I') {
                 printf("foi tratado pelo restaurante %d, ", results->receiving_rest);
                 printf("encaminhado pelo motorista %d, ", results->receiving_driver);
 
-                if (results->status == 'D')
-                {
+                if (results->status == 'D') {
                     printf("mas ainda nao foi recebido no cliente!\n");
-                }
-                else
-                {
+                } else {
                     printf("e enviado ao cliente %d!\n", results->receiving_client);
                 }
                 return;
-            }
-            else
-            {
+            } else {
                 printf("ainda nao foi recebido no restaurante!\n");
                 return;
             }
@@ -361,8 +315,7 @@ void read_status(struct main_data *data, struct semaphores *sems)
     semaphore_mutex_unlock(sems->results_mutex);
 
     printf("id de pedido fornecido e invalido!\n");
-    for (int i = strlen(c) - 1; i >= 0; i--)
-    {
+    for (int i = strlen(c) - 1; i >= 0; i--) {
         ungetc(c[i], stdin);
     }
     return;
@@ -372,8 +325,7 @@ void read_status(struct main_data *data, struct semaphores *sems)
  * *_full devem ser inicializados com valor 0, semáforos *_empty com valor
  * igual ao tamanho dos buffers de memória partilhada, e os *_mutex com
  * valor igual a 1. Para tal pode ser usada a função semaphore_create.*/
-void create_semaphores(struct main_data *data, struct semaphores *sems)
-{
+void create_semaphores(struct main_data *data, struct semaphores *sems) {
     sems->main_rest->full = semaphore_create(STR_SEM_MAIN_REST_FULL, 0);
     sems->main_rest->empty = semaphore_create(STR_SEM_MAIN_REST_EMPTY, data->buffers_size);
     sems->main_rest->mutex = semaphore_create(STR_SEM_MAIN_REST_MUTEX, 1);
@@ -394,20 +346,17 @@ void create_semaphores(struct main_data *data, struct semaphores *sems)
  * pode ser usada a função produce_end sobre todos os conjuntos de semáforos
  * onde possam estar processos adormecidos e um número de vezes igual ao
  * máximo de processos que possam lá estar.*/
-void wakeup_processes(struct main_data *data, struct semaphores *sems)
-{
+void wakeup_processes(struct main_data *data, struct semaphores *sems) {
     int i;
     for (i = 0; i < data->max_ops; i++) {
         produce_end(sems->main_rest);
         produce_end(sems->driv_cli);
         produce_end(sems->rest_driv);
     }
-    
 }
 
 /* Função que liberta todos os semáforos da estrutura semaphores. */
-void destroy_semaphores(struct semaphores *sems)
-{
+void destroy_semaphores(struct semaphores *sems) {
     semaphore_destroy(STR_SEM_MAIN_REST_FULL, sems->main_rest->full);
     semaphore_destroy(STR_SEM_MAIN_REST_EMPTY, sems->main_rest->empty);
     semaphore_destroy(STR_SEM_MAIN_REST_MUTEX, sems->main_rest->mutex);
@@ -436,7 +385,7 @@ void stop_execution_handler(int sig, siginfo_t *info, void *ucontext) {
  * as zonas de memória partilhada e dinâmica previamente
  * reservadas. Para tal, pode usar as outras funções auxiliares do main.h.
  */
-void stop_execution(struct main_data *data, struct communication_buffers *buffers, struct semaphores *sems){
+void stop_execution(struct main_data *data, struct communication_buffers *buffers, struct semaphores *sems) {
     *data->terminate = 1;
     wakeup_processes(data, sems);
     wait_processes(data);
@@ -448,32 +397,26 @@ void stop_execution(struct main_data *data, struct communication_buffers *buffer
  * incluindo restaurantes, motoristas e clientes. Para tal, pode usar a função
  * wait_process do process.h.
  */
-void wait_processes(struct main_data *data)
-{
+void wait_processes(struct main_data *data) {
     int i = 0;
 
-    for (i = 0; i < data->n_restaurants; i++)
-    {
+    for (i = 0; i < data->n_restaurants; i++) {
         data->restaurant_stats[i] = wait_process(data->restaurant_pids[i]);
     }
 
-    for (i = 0; i < data->n_drivers; i++)
-    {
+    for (i = 0; i < data->n_drivers; i++) {
         data->driver_stats[i] = wait_process(data->driver_pids[i]);
     }
 
-    for (i = 0; i < data->n_clients; i++)
-    {
+    for (i = 0; i < data->n_clients; i++) {
         data->client_stats[i] = wait_process(data->client_pids[i]);
     }
-
 }
 
 /* Função que imprime as estatisticas finais do MAGNAEATS, nomeadamente quantas
  * operações foram processadas por cada restaurante, motorista e cliente.
  */
-void write_statistics(struct main_data *data)
-{
+void write_statistics(struct main_data *data) {
     writeFile(args->statistics_filename, data);
     printf("Terminando o MAGNAEATS!\n");
 }
@@ -481,8 +424,7 @@ void write_statistics(struct main_data *data)
 /* Função que liberta todos os buffers de memória dinâmica e partilhada previamente
  * reservados na estrutura data.
  */
-void destroy_memory_buffers(struct main_data *data, struct communication_buffers *buffers)
-{
+void destroy_memory_buffers(struct main_data *data, struct communication_buffers *buffers) {
     destroy_dynamic_memory(data->client_stats);
     destroy_dynamic_memory(data->driver_stats);
     destroy_dynamic_memory(data->restaurant_stats);
@@ -490,39 +432,41 @@ void destroy_memory_buffers(struct main_data *data, struct communication_buffers
     destroy_dynamic_memory(data->driver_pids);
     destroy_dynamic_memory(data->restaurant_pids);
 
-    for (int i = 0; i < data->max_ops; i++)
-    {
+    for (int i = 0; i < data->max_ops; i++) {
         destroy_dynamic_memory(data->results[i].requested_dish);
     }
 
-    destroy_shared_memory(STR_SHM_MAIN_REST_BUFFER, buffers->main_rest->buffer, data->buffers_size * sizeof(struct operation));
+    destroy_shared_memory(STR_SHM_MAIN_REST_BUFFER, buffers->main_rest->buffer,
+                          data->buffers_size * sizeof(struct operation));
     destroy_shared_memory(STR_SHM_MAIN_REST_PTR, buffers->main_rest->ptrs, data->buffers_size * sizeof(int));
 
-    destroy_shared_memory(STR_SHM_REST_DRIVER_BUFFER, buffers->rest_driv->buffer, data->buffers_size * sizeof(struct operation));
-    destroy_shared_memory(STR_SHM_REST_DRIVER_PTR, buffers->rest_driv->ptrs, data->buffers_size * sizeof(struct pointers));
+    destroy_shared_memory(STR_SHM_REST_DRIVER_BUFFER, buffers->rest_driv->buffer,
+                          data->buffers_size * sizeof(struct operation));
+    destroy_shared_memory(STR_SHM_REST_DRIVER_PTR, buffers->rest_driv->ptrs,
+                          data->buffers_size * sizeof(struct pointers));
 
-    destroy_shared_memory(STR_SHM_DRIVER_CLIENT_BUFFER, buffers->driv_cli->buffer, data->buffers_size * sizeof(struct operation));
+    destroy_shared_memory(STR_SHM_DRIVER_CLIENT_BUFFER, buffers->driv_cli->buffer,
+                          data->buffers_size * sizeof(struct operation));
     destroy_shared_memory(STR_SHM_DRIVER_CLIENT_PTR, buffers->driv_cli->ptrs, data->buffers_size * sizeof(int));
 
     destroy_shared_memory(STR_SHM_RESULTS, data->results, data->n_clients * sizeof(struct operation));
     destroy_shared_memory(STR_SHM_TERMINATE, data->terminate, sizeof(int));
 }
 
-int main(int argc, char *argv[])
-{
+int main(int argc, char *argv[]) {
     // init data structures
     global_data = create_dynamic_memory(sizeof(struct main_data));
     global_buffers = create_dynamic_memory(sizeof(struct communication_buffers));
     global_buffers->main_rest = create_dynamic_memory(sizeof(struct rnd_access_buffer));
     global_buffers->rest_driv = create_dynamic_memory(sizeof(struct circular_buffer));
     global_buffers->driv_cli = create_dynamic_memory(sizeof(struct rnd_access_buffer));
-    
+
     // init semaphore data structure
     global_sems = create_dynamic_memory(sizeof(struct semaphores));
     global_sems->main_rest = create_dynamic_memory(sizeof(struct prodcons));
     global_sems->rest_driv = create_dynamic_memory(sizeof(struct prodcons));
     global_sems->driv_cli = create_dynamic_memory(sizeof(struct prodcons));
-    
+
     // execute main code
     main_args(argc, argv, global_data);
     create_dynamic_memory_buffers(global_data);
@@ -531,7 +475,7 @@ int main(int argc, char *argv[])
     launch_processes(global_buffers, global_data, global_sems);
 
     user_interaction(global_buffers, global_data, global_sems);
-    
+
     // release memory before terminating
     destroy_dynamic_memory(global_data);
     destroy_dynamic_memory(global_buffers->main_rest);
