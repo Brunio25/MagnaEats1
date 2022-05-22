@@ -1,4 +1,9 @@
-#include "../include/log.h"
+// authors:
+//     Bruno Soares    fc57100
+//     Renato Custódio fc56320
+//     João Vedor      fc56311
+
+
 
 #include <math.h>
 #include <stdio.h>
@@ -7,6 +12,7 @@
 #include <sys/stat.h>
 #include <time.h>
 
+#include "../include/log.h"
 #include "../include/metime.h"
 
 // Retorna um long com os primeiros três dígitos de um long

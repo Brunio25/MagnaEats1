@@ -3,11 +3,12 @@
 //     Renato Custódio fc56320
 //     João Vedor      fc56311
 
-#include "../include/client.h"
+
 
 #include <stdio.h>
 #include <string.h>
 
+#include "../include/client.h"
 #include "../include/main.h"
 #include "../include/memory.h"
 #include "../include/mesignal.h"

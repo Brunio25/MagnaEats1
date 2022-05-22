@@ -3,7 +3,7 @@
 //     Renato Custódio fc56320
 //     João Vedor      fc56311
 
-#include "../include/main.h"
+
 
 #include <ctype.h>
 #include <errno.h>
@@ -14,6 +14,7 @@
 #include <sys/stat.h>
 #include <unistd.h>
 
+#include "../include/main.h"
 #include "../include/configuration.h"
 #include "../include/log.h"
 #include "../include/main-private.h"

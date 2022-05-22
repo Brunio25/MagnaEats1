@@ -1,9 +1,15 @@
-#include "../include/stats.h"
+// authors:
+//     Bruno Soares    fc57100
+//     Renato Custódio fc56320
+//     João Vedor      fc56311
+
+
 
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
 
+#include "../include/stats.h"
 #include "../include/log.h"
 #include "../include/metime.h"
 

@@ -1,4 +1,9 @@
-#include "../include/mesignal.h"
+// authors:
+//     Bruno Soares    fc57100
+//     Renato Custódio fc56320
+//     João Vedor      fc56311
+
+
 
 #include <signal.h>
 #include <stdio.h>
@@ -6,6 +11,7 @@
 #include <time.h>
 #include <unistd.h>
 
+#include "../include/mesignal.h"
 #include "../include/main-private.h"
 #include "../include/main.h"
 

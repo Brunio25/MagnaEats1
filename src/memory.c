@@ -3,7 +3,7 @@
 //     Renato Custódio fc56320
 //     João Vedor      fc56311
 
-#include "../include/memory.h"
+
 
 #include <fcntl.h>
 #include <stdio.h>
@@ -14,6 +14,7 @@
 #include <sys/wait.h>
 #include <unistd.h>
 
+#include "../include/memory.h"
 #include "../include/main.h"
 
 /* Função que reserva uma zona de memória partilhada com tamanho indicado

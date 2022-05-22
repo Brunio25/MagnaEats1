@@ -1,10 +1,16 @@
-#include "../include/configuration.h"
+// authors:
+//     Bruno Soares    fc57100
+//     Renato Custódio fc56320
+//     João Vedor      fc56311
+
+
 
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <sys/stat.h>
 
+#include "../include/configuration.h"
 #include "../include/main-private.h"
 
 int readFile(char* filename, struct args* dest) {

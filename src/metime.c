@@ -1,9 +1,15 @@
-#include "../include/metime.h"
+// authors:
+//     Bruno Soares    fc57100
+//     Renato Custódio fc56320
+//     João Vedor      fc56311
+
+
 
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
 
+#include "../include/metime.h"
 #include "../include/log.h"
 
 // converte um timespec para uma string e coloca-a num buffer com um formato especico,

@@ -3,7 +3,7 @@
 //     Renato Custódio fc56320
 //     João Vedor      fc56311
 
-#include "../include/process.h"
+
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -11,6 +11,7 @@
 #include <sys/wait.h>
 #include <unistd.h>
 
+#include "../include/process.h"
 #include "../include/client.h"
 #include "../include/driver.h"
 #include "../include/main.h"
