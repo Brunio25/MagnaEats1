@@ -1,3 +1,5 @@
+#include <signal.h>
+
 #ifndef MAX_REQUESTED_DISH_SIZE
 #define MAX_REQUESTED_DISH_SIZE 100
 
@@ -9,6 +11,6 @@ void printHelp();
 // Função que verifica se uma string é composta apenas por digitos
 int isNumber(char* str);
 
-void stop_execution_handler();
+void stop_execution_handler(int sig, siginfo_t *info, void *ucontext);
 
 #endif

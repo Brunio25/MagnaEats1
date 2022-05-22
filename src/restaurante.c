@@ -23,7 +23,7 @@
  */
 int execute_restaurant(int rest_id, struct communication_buffers *buffers, struct main_data *data, struct semaphores *sems)
 {
-    stop_signal(); ////////////
+    // stop_signal(); ////////////
     int counter = 0;
     while (1)
     {
@@ -43,6 +43,7 @@ int execute_restaurant(int rest_id, struct communication_buffers *buffers, struc
         else
         {
             destroy_dynamic_memory(op);
+            printf("rest %d: %d\n", rest_id, counter);
             return counter;
         }
 

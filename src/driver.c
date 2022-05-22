@@ -24,7 +24,7 @@
  */
 int execute_driver(int driver_id, struct communication_buffers *buffers, struct main_data *data, struct semaphores *sems)
 {
-    stop_signal(); ////////////
+    // stop_signal(); ////////////
     int counter = 0;
     while (1)
     {

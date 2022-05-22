@@ -48,12 +48,13 @@ int launch_alarme(struct main_data* data, int alarm_time) {
 int stop_signal() {
     //sigaction(int signum, const struct sigaction *act, struct sigaction *oldact);
     struct sigaction sa;
-    sa.sa_handler = stop_execution_handler;
-    sa.sa_flags = 0;
     sigemptyset(&sa.sa_mask);
+    sigaddset(&sa.sa_mask, SIGINT);
+    sa.sa_flags = SA_SIGINFO;
+    sa.sa_sigaction = stop_execution_handler;
 
     if(sigaction(SIGINT, &sa, NULL) == -1){
-        perror("--");
+        perror("sigaction");
         return -1;
     }
 

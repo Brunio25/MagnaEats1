@@ -20,9 +20,8 @@
 #include <sys/stat.h>
 #include <signal.h>
 
-
-struct args *args;
 int alarm_id;
+struct args *args;
 struct main_data *global_data;
 struct communication_buffers *global_buffers;
 struct semaphores *global_sems;
@@ -167,23 +166,25 @@ void user_interaction(struct communication_buffers* buffers, struct main_data* d
     {
         printf("Introduzir acao:\n");
         size_t size = 100;
-        char *buffer = create_dynamic_memory(size * sizeof(char));   ////se quiserem melhoar tao à vontade
+        char *buffer = create_dynamic_memory(size * sizeof(char));   ////se quiserem melhorar tao à vontade
 
         scanf("%1s", line);
         for (int i = strlen(line) - 1; i >= 0; i--) {
             ungetc(line[i], stdin);
         }
 
+        /////////////////////////////////////////////////////////////
         fgets(buffer, 100, stdin);
         appendInstruction(args->statistics_filename, buffer);
 
         for (int i = strlen(buffer) - 1; i >= 0; i--) {
             ungetc(buffer[i], stdin);
-        }
+        }                                                           //Nao faz sentido dar get unget e depois get
 
         destroy_dynamic_memory(buffer);
 
         scanf("%7s", line);
+        /////////////////////////////////////////////////////////////
         
         if (strcmp(line, "request") == 0)
         {
@@ -418,7 +419,7 @@ void destroy_semaphores(struct semaphores *sems)
     semaphore_destroy(STR_SEM_RESULTS_MUTEX, sems->results_mutex);
 }
 
-void stop_execution_handler() {
+void stop_execution_handler(int sig, siginfo_t *info, void *ucontext) {
     stop_execution(global_data, global_buffers, global_sems);
 }
 
@@ -435,7 +436,6 @@ void stop_execution(struct main_data *data, struct communication_buffers *buffer
     *data->terminate = 1;
     wakeup_processes(data, sems); //
     wait_processes(data);
-    kill(alarm_id, 0);
     write_statistics(data);
     destroy_memory_buffers(data, buffers);
     destroy_semaphores(sems);
